@@ -1,0 +1,8 @@
+deploy/*
+modules/*/build/
+build/*
+.gradle/*
+
+*.iws
+*.ipr
+*.iml
