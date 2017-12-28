@@ -23,6 +23,7 @@ def globalModule = project(":${modulePrefix}-global")
 def coreModule = project(":${modulePrefix}-core")
 def guiModule = project(":${modulePrefix}-gui")
 def webModule = project(":${modulePrefix}-web")
+def javaMelodyModule = project(":${modulePrefix}-javamelody")
 
 def servletApi = 'org.apache.tomcat:tomcat-servlet-api:8.0.26'
 
@@ -47,12 +48,11 @@ cuba {
 
 dependencies {
     appComponent("com.haulmont.cuba:cuba-global:$cubaVersion")
-
 }
 
 def hsql = 'org.hsqldb:hsqldb:2.2.9'
 
-configure([globalModule, coreModule, guiModule, webModule]) {
+configure([globalModule, coreModule, guiModule, webModule, javaMelodyModule]) {
     apply(plugin: 'java')
     apply(plugin: 'maven')
     apply(plugin: 'idea')
@@ -94,6 +94,7 @@ configure(coreModule) {
 
     dependencies {
         compile(globalModule)
+        compile(javaMelodyModule)
         provided(servletApi)
         jdbc(hsql)
         testRuntime(hsql)
@@ -113,7 +114,7 @@ configure(coreModule) {
 
     task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
         appName = "${modulePrefix}-core"
-        appJars("${modulePrefix}-global", "${modulePrefix}-core")
+        appJars("${modulePrefix}-global", "${modulePrefix}-core", "${modulePrefix}-javamelody")
     }
 
     task createDb(dependsOn: assembleDbScripts, description: 'Creates local database', type: CubaDbCreation) {
@@ -152,9 +153,10 @@ configure(webModule) {
     }
 
     dependencies {
+        compile(globalModule)
         provided(servletApi)
         compile(guiModule)
-
+        compile(javaMelodyModule)
     }
     
     task webArchive(type: Zip) {
@@ -191,13 +193,16 @@ configure(webModule) {
 
     task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
         appName = "${modulePrefix}"
-        appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web")
+        appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web", "${modulePrefix}-javamelody")
     }
 }
 
-
-
-
+configure(javaMelodyModule) {
+    dependencies {
+        compile(globalModule)
+        compile('net.bull.javamelody:javamelody-core:1.70.0')
+    }
+}
 
 task undeploy(type: Delete, dependsOn: ":${modulePrefix}-web:cleanConf") {
     delete("$cuba.tomcat.dir/shared")

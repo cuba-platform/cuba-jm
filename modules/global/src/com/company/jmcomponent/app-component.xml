@@ -13,7 +13,7 @@
                   value="+com/company/jmcomponent/views.xml"/>
     </module>
     <module blocks="core"
-            dependsOn="global"
+            dependsOn="global,javamelody"
             name="core">
         <artifact appJar="true"
                   name="jmc-core"/>
@@ -33,7 +33,7 @@
                   name="jmc-gui"/>
     </module>
     <module blocks="web"
-            dependsOn="gui"
+            dependsOn="gui,javamelody"
             name="web">
         <artifact appJar="true"
                   name="jmc-web"/>
@@ -53,5 +53,10 @@
                   value="+com/company/jmcomponent/web-permissions.xml"/>
         <property name="cuba.mainMessagePack"
                   value="+com.company.jmcomponent.web"/>
+    </module>
+    <module name="javamelody" dependsOn="global" blocks="web,desktop">
+        <artifact name="jmc-javamelody"
+                  appJar="true"/>
+        <property name="jmc.authorizedUserCredentials" value="admin:admin"/>
     </module>
 </app-component>

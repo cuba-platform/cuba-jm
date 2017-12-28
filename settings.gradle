@@ -1,7 +1,8 @@
 rootProject.name = 'jm-component'
 def modulePrefix = 'jmc'
-include(":${modulePrefix}-global", ":${modulePrefix}-core", ":${modulePrefix}-gui", ":${modulePrefix}-web")
+include(":${modulePrefix}-global", ":${modulePrefix}-core", ":${modulePrefix}-gui", ":${modulePrefix}-web", ":${modulePrefix}-javamelody")
 project(":${modulePrefix}-global").projectDir = new File(settingsDir, 'modules/global')
 project(":${modulePrefix}-core").projectDir = new File(settingsDir, 'modules/core')
 project(":${modulePrefix}-gui").projectDir = new File(settingsDir, 'modules/gui')
 project(":${modulePrefix}-web").projectDir = new File(settingsDir, 'modules/web')
+project(":${modulePrefix}-javamelody").projectDir = new File(settingsDir, 'modules/javamelody')
