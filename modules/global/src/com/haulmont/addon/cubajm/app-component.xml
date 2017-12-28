@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<app-component xmlns="http://schemas.haulmont.com/cuba/app-component.xsd"
+               dependsOn="com.haulmont.cuba">
+    <module blocks="*"
+            name="global">
+        <artifact appJar="true"
+                  name="cuba-jm-global"/>
+        <property name="cuba.persistenceConfig"
+                  value="+com/haulmont/addon/cubajm/persistence.xml"/>
+        <property name="cuba.metadataConfig"
+                  value="+com/haulmont/addon/cubajm/metadata.xml"/>
+        <property name="cuba.viewsConfig"
+                  value="+com/haulmont/addon/cubajm/views.xml"/>
+    </module>
+    <module blocks="core"
+            dependsOn="global,jm"
+            name="core">
+        <artifact appJar="true"
+                  name="cuba-jm-core"/>
+        <artifact classifier="db"
+                  configuration="dbscripts"
+                  ext="zip"
+                  name="cuba-jm-core"/>
+        <property name="cuba.springContextConfig"
+                  value="+com/haulmont/addon/cubajm/spring.xml"/>
+        <property name="cuba.mainMessagePack"
+                  value="+com.haulmont.addon.cubajm.core"/>
+    </module>
+    <module blocks="web,desktop"
+            dependsOn="global"
+            name="gui">
+        <artifact appJar="true"
+                  name="cuba-jm-gui"/>
+    </module>
+    <module blocks="web"
+            dependsOn="gui,jm"
+            name="web">
+        <artifact appJar="true"
+                  name="cuba-jm-web"/>
+        <artifact classifier="web"
+                  configuration="webcontent"
+                  ext="zip"
+                  name="cuba-jm-web"/>
+        <property name="cuba.springContextConfig"
+                  value="+com/haulmont/addon/cubajm/web-spring.xml"/>
+        <property name="cuba.dispatcherSpringContextConfig"
+                  value="+com/haulmont/addon/cubajm/web-dispatcher-spring.xml"/>
+        <property name="cuba.windowConfig"
+                  value="+com/haulmont/addon/cubajm/web-screens.xml"/>
+        <property name="cuba.menuConfig"
+                  value="+com/haulmont/addon/cubajm/web-menu.xml"/>
+        <property name="cuba.permissionConfig"
+                  value="+com/haulmont/addon/cubajm/web-permissions.xml"/>
+        <property name="cuba.mainMessagePack"
+                  value="+com.haulmont.addon.cubajm.web"/>
+    </module>
+    <module name="jm" dependsOn="global" blocks="web,desktop">
+        <artifact name="cuba-jm-jm"
+                  appJar="true"/>
+        <property name="cubajm.authorizedUserCredentials" value="admin:admin"/>
+    </module>
+</app-component>

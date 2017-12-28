@@ -1,8 +1,8 @@
-rootProject.name = 'jm-component'
-def modulePrefix = 'jmc'
-include(":${modulePrefix}-global", ":${modulePrefix}-core", ":${modulePrefix}-gui", ":${modulePrefix}-web", ":${modulePrefix}-javamelody")
+rootProject.name = 'cuba-jm'
+def modulePrefix = 'cuba-jm'
+include(":${modulePrefix}-global", ":${modulePrefix}-core", ":${modulePrefix}-gui", ":${modulePrefix}-web", ":${modulePrefix}-jm")
 project(":${modulePrefix}-global").projectDir = new File(settingsDir, 'modules/global')
 project(":${modulePrefix}-core").projectDir = new File(settingsDir, 'modules/core')
 project(":${modulePrefix}-gui").projectDir = new File(settingsDir, 'modules/gui')
 project(":${modulePrefix}-web").projectDir = new File(settingsDir, 'modules/web')
-project(":${modulePrefix}-javamelody").projectDir = new File(settingsDir, 'modules/javamelody')
+project(":${modulePrefix}-jm").projectDir = new File(settingsDir, 'modules/jm')

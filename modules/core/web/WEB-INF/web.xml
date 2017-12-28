@@ -6,9 +6,9 @@
     <!-- Application properties config files -->
     <context-param>
         <param-name>appPropertiesConfig</param-name>
-        <param-value>classpath:com/company/jmcomponent/app.properties
+        <param-value>classpath:com/haulmont/addon/cubajm/app.properties
             /WEB-INF/local.app.properties
-            "file:${catalina.base}/conf/jmc-core/local.app.properties"</param-value>
+            "file:${catalina.base}/conf/cuba-jm-core/local.app.properties"</param-value>
     </context-param>
     <!--Application components-->
     <context-param>

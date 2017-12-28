@@ -1,8 +1,6 @@
-
 buildscript {
-    ext.cubaVersion = '6.7.4'
+    ext.cubaVersion = '6.7.6'
     repositories {
-        
         maven {
             url 'https://repo.cuba-platform.com/content/groups/work'
             credentials {
@@ -10,30 +8,28 @@ buildscript {
                 password(rootProject.hasProperty('repoPass') ? rootProject['repoPass'] : 'cuba123')
             }
         }
-        
     }
     dependencies {
         classpath "com.haulmont.gradle:cuba-plugin:$cubaVersion"
     }
 }
 
-def modulePrefix = 'jmc'
+def modulePrefix = 'cuba-jm'
 
 def globalModule = project(":${modulePrefix}-global")
 def coreModule = project(":${modulePrefix}-core")
 def guiModule = project(":${modulePrefix}-gui")
 def webModule = project(":${modulePrefix}-web")
-def javaMelodyModule = project(":${modulePrefix}-javamelody")
+def jmModule = project(":${modulePrefix}-jm")
 
 def servletApi = 'org.apache.tomcat:tomcat-servlet-api:8.0.26'
-
 
 apply(plugin: 'idea')
 apply(plugin: 'cuba')
 
 cuba {
     artifact {
-        group = 'com.company.jmcomponent'
+        group = 'com.haulmont.addon.cubajm'
         version = '0.1'
         isSnapshot = true
     }
@@ -52,7 +48,7 @@ dependencies {
 
 def hsql = 'org.hsqldb:hsqldb:2.2.9'
 
-configure([globalModule, coreModule, guiModule, webModule, javaMelodyModule]) {
+configure([globalModule, coreModule, guiModule, webModule, jmModule]) {
     apply(plugin: 'java')
     apply(plugin: 'maven')
     apply(plugin: 'idea')
@@ -81,12 +77,9 @@ configure(globalModule) {
             attributes('App-Component-Version': cuba.artifact.version + (cuba.artifact.isSnapshot ? '-SNAPSHOT' : ''))
         }
     }
-
-    
 }
 
 configure(coreModule) {
-
     configurations {
         jdbc
         dbscripts
@@ -94,7 +87,7 @@ configure(coreModule) {
 
     dependencies {
         compile(globalModule)
-        compile(javaMelodyModule)
+        compile(jmModule)
         provided(servletApi)
         jdbc(hsql)
         testRuntime(hsql)
@@ -114,13 +107,13 @@ configure(coreModule) {
 
     task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
         appName = "${modulePrefix}-core"
-        appJars("${modulePrefix}-global", "${modulePrefix}-core", "${modulePrefix}-javamelody")
+        appJars("${modulePrefix}-global", "${modulePrefix}-core", "${modulePrefix}-jm")
     }
 
     task createDb(dependsOn: assembleDbScripts, description: 'Creates local database', type: CubaDbCreation) {
         dbms = 'hsql'
         host = 'localhost'
-        dbName = 'jmcomponent'
+        dbName = 'cubajm'
         dbUser = 'sa'
         dbPassword = ''
     }
@@ -128,7 +121,7 @@ configure(coreModule) {
     task updateDb(dependsOn: assembleDbScripts, description: 'Updates local database', type: CubaDbUpdate) {
         dbms = 'hsql'
         host = 'localhost'
-        dbName = 'jmcomponent'
+        dbName = 'cubajm'
         dbUser = 'sa'
         dbPassword = ''
     }
@@ -142,7 +135,7 @@ configure(guiModule) {
 
     task deployConf(type: Copy) {
         from file('src')
-        include "com/company/jmcomponent/**"
+        include "com/haulmont/addon/cubajm/**"
         into "$cuba.tomcat.dir/conf/${modulePrefix}"
     }
 }
@@ -156,7 +149,7 @@ configure(webModule) {
         compile(globalModule)
         provided(servletApi)
         compile(guiModule)
-        compile(javaMelodyModule)
+        compile(jmModule)
     }
     
     task webArchive(type: Zip) {
@@ -171,7 +164,7 @@ configure(webModule) {
 
     task deployConf(type: Copy) {
         from file('src')
-        include "com/company/jmcomponent/**"
+        include "com/haulmont/addon/cubajm/**"
         into "$cuba.tomcat.dir/conf/${modulePrefix}"
     }
 
@@ -193,11 +186,11 @@ configure(webModule) {
 
     task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
         appName = "${modulePrefix}"
-        appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web", "${modulePrefix}-javamelody")
+        appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web", "${modulePrefix}-jm")
     }
 }
 
-configure(javaMelodyModule) {
+configure(jmModule) {
     dependencies {
         compile(globalModule)
         compile('net.bull.javamelody:javamelody-core:1.70.0')
