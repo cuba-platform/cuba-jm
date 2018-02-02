@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
-@Component
+@Component("cubajm_JavaMelodyInitializer")
 public class JavaMelodyInitializer {
 
     private static final String JAVAMELODY_FILTER_URL_PROP = "cubajm.monitoringUrl";
@@ -39,7 +39,7 @@ public class JavaMelodyInitializer {
     private String jmFilterUrl;
     private String filtersNameBase;
 
-    @EventListener(ServletContextInitializedEvent.class)
+    @EventListener
     public void initialize(ServletContextInitializedEvent e) {
         if (singleWarDeployment(e.getSource())) {
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
@@ -67,9 +67,9 @@ public class JavaMelodyInitializer {
         if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
             skipRegistration = true;
 
-            String msg = String.format("Value of application property \"%s\" is not defined. " +
-                    "JavaMelody monitoring will not be enabled for this application block", JAVAMELODY_FILTER_URL_PROP);
-            log.info(msg);
+            log.info("Value of application property '{}' is not defined." +
+                    "JavaMelody monitoring will not be enabled for this application block",
+                    JAVAMELODY_FILTER_URL_PROP);
 
             return;
         }
