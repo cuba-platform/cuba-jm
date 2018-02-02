@@ -9,6 +9,12 @@ JavaMelody: monitoring of JavaEE applications
 
 ![JavaMelody Monitoring dashboard](https://github.com/javamelody/javamelody/wiki/resources/screenshots/graphs.png)
 
+## Compatibility with platform versions
+
+| Add-on        | Platform      |
+|:------------- |:------------- |
+| 0.1.0         | 6.8.0         |
+
 ## Installation and configuration
 
 1. add custom application component to your project via CUBA Studio
