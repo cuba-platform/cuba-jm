@@ -13,9 +13,23 @@ import com.haulmont.cuba.core.config.defaults.DefaultString;
 public interface JavaMelodyConfig extends Config {
 
     /**
-     * @return credentials of user that is authorized to open monitoring dashboard
+     * @return login of a user that is authorized to open monitoring dashboard
      */
-    @Property("cubajm.authorizedUserCredentials")
-    @DefaultString("admin:admin")
-    String getAuthorizedUserCredentials();
+    @Property("cubajm.authorizedUserLogin")
+    @DefaultString("admin")
+    String getAuthorizedUserLogin();
+
+    /**
+     * @return password of a user that is authorized to open monitoring dashboard
+     */
+    @Property("cubajm.authorizedUserPassword")
+    @DefaultString("admin")
+    String getAuthorizedUserPassword();
+
+    /**
+     * @return the URL postfix to access to the monitoring dashboard. For example, for the middleware block it equals
+     * to "/core-jm/
+     */
+    @Property("cubajm.monitoringUrl")
+    String getMonitoringUrl();
 }

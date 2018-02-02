@@ -12,20 +12,17 @@ import java.io.UnsupportedEncodingException;
 import java.util.StringTokenizer;
 
 public class JavaMelodySecurityFilter implements Filter {
-    private String username;
+
+    private String login;
     private String password;
 
     @Override
     public void init(FilterConfig filterConfig) {
-        String allowedUserParam = AppBeans.get(Configuration.class)
-                .getConfig(JavaMelodyConfig.class)
-                .getAuthorizedUserCredentials();
+        JavaMelodyConfig javaMelodyConfig = AppBeans.get(Configuration.class)
+                .getConfig(JavaMelodyConfig.class);
 
-        if (allowedUserParam == null || allowedUserParam.isEmpty())
-            return;
-
-        username = allowedUserParam.split(":")[0];
-        password = allowedUserParam.split(":")[1];
+        login = javaMelodyConfig.getAuthorizedUserLogin();
+        password = javaMelodyConfig.getAuthorizedUserPassword();
     }
 
     @Override
@@ -44,10 +41,10 @@ public class JavaMelodySecurityFilter implements Filter {
                         String credentials = new String(Base64.decodeBase64(st.nextToken()), "UTF-8");
                         int p = credentials.indexOf(":");
                         if (p != -1) {
-                            String _username = credentials.substring(0, p).trim();
+                            String _login = credentials.substring(0, p).trim();
                             String _password = credentials.substring(p + 1).trim();
 
-                            if (!username.equals(_username) || !password.equals(_password)) {
+                            if (!login.equals(_login) || !password.equals(_password)) {
                                 unauthorized(httpResponse, "Bad credentials");
                             }
 

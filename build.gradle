@@ -1,6 +1,7 @@
 buildscript {
-    ext.cubaVersion = '6.7.6'
+    ext.cubaVersion = '6.8.0'
     repositories {
+        mavenLocal()
         maven {
             url 'https://repo.cuba-platform.com/content/groups/work'
             credentials {
@@ -30,7 +31,7 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.haulmont.addon.cubajm'
-        version = '0.1'
+        version = '0.1.0'
         isSnapshot = true
     }
     tomcat {
@@ -107,7 +108,7 @@ configure(coreModule) {
 
     task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
         appName = "${modulePrefix}-core"
-        appJars("${modulePrefix}-global", "${modulePrefix}-core", "${modulePrefix}-jm")
+        appJars("${modulePrefix}-global", "${modulePrefix}-core", "${modulePrefix}-jm", "javamelody-core")
     }
 
     task createDb(dependsOn: assembleDbScripts, description: 'Creates local database', type: CubaDbCreation) {
@@ -186,7 +187,7 @@ configure(webModule) {
 
     task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
         appName = "${modulePrefix}"
-        appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web", "${modulePrefix}-jm")
+        appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web", "${modulePrefix}-jm", "javamelody-core")
     }
 }
 
@@ -215,7 +216,7 @@ task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefi
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.4.1'
+    gradleVersion = '4.3.1'
 }
 
 apply from: 'extra.gradle'
