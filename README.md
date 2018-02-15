@@ -28,18 +28,6 @@ and web tiers respectively;
 3. configure monitoring dashboard authorization credentials with
 `cubajm.authorizedUserLogin` & `cubajm.authorizedUserPassword`
 application properties. The default values are `admin`, `admin`;
-4. declare "javamelody-core" dependency as appJar in the parent project
-for the `core` and `web` modules:
-
-        // example for the 'web' module
-        configure(webModule) {
-            ...
-            task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
-                appName = "${modulePrefix}"
-                appJars("${modulePrefix}-global", "${modulePrefix}-web", "javamelody-core")
-            }
-            ...
-        }
 
 All described here application properties can also be found in the
 `JavaMelodyConfig` configuration interface.

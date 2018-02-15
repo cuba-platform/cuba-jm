@@ -11,6 +11,9 @@
             name="core">
         <artifact appJar="true"
                   name="cuba-jm-core"/>
+        <artifact name="javamelody-core"
+                  appJar="true"
+                  library="true"/>
         <property name="cuba.springContextConfig"
                   value="+com/haulmont/addon/cubajm/spring.xml"/>
         <property name="cubajm.monitoringUrl"
@@ -25,6 +28,9 @@
                   configuration="webcontent"
                   ext="zip"
                   name="cuba-jm-web"/>
+        <artifact name="javamelody-core"
+                  appJar="true"
+                  library="true"/>
         <property name="cuba.springContextConfig"
                   value="+com/haulmont/addon/cubajm/web-spring.xml"/>
         <property name="cuba.dispatcherSpringContextConfig"
