@@ -14,6 +14,7 @@ JavaMelody: monitoring of JavaEE applications
 | Add-on        | Platform      |
 |:------------- |:------------- |
 | 0.1.0         | 6.8.0         |
+| 0.2.0         | 6.8.1         |
 
 ## Installation and configuration
 
