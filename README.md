@@ -36,7 +36,7 @@ for the `core` and `web` modules:
             ...
             task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
                 appName = "${modulePrefix}"
-                appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web", "javamelody-core")
+                appJars("${modulePrefix}-global", "${modulePrefix}-web", "javamelody-core")
             }
             ...
         }

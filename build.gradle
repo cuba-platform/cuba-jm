@@ -19,7 +19,6 @@ def modulePrefix = 'cuba-jm'
 
 def globalModule = project(":${modulePrefix}-global")
 def coreModule = project(":${modulePrefix}-core")
-def guiModule = project(":${modulePrefix}-gui")
 def webModule = project(":${modulePrefix}-web")
 def jmModule = project(":${modulePrefix}-jm")
 
@@ -49,7 +48,7 @@ dependencies {
 
 def hsql = 'org.hsqldb:hsqldb:2.2.9'
 
-configure([globalModule, coreModule, guiModule, webModule, jmModule]) {
+configure([globalModule, coreModule, webModule, jmModule]) {
     apply(plugin: 'java')
     apply(plugin: 'maven')
     apply(plugin: 'idea')
@@ -128,19 +127,6 @@ configure(coreModule) {
     }
 }
 
-configure(guiModule) {
-    dependencies {
-        compile(globalModule)
-
-    }
-
-    task deployConf(type: Copy) {
-        from file('src')
-        include "com/haulmont/addon/cubajm/**"
-        into "$cuba.tomcat.dir/conf/${modulePrefix}"
-    }
-}
-
 configure(webModule) {
     configurations {
         webcontent
@@ -149,7 +135,6 @@ configure(webModule) {
     dependencies {
         compile(globalModule)
         provided(servletApi)
-        compile(guiModule)
         compile(jmModule)
     }
     
@@ -187,7 +172,7 @@ configure(webModule) {
 
     task deploy(dependsOn: [assemble, cleanConf], type: CubaDeployment) {
         appName = "${modulePrefix}"
-        appJars("${modulePrefix}-global", "${modulePrefix}-gui", "${modulePrefix}-web", "${modulePrefix}-jm", "javamelody-core")
+        appJars("${modulePrefix}-global", "${modulePrefix}-web", "${modulePrefix}-jm", "javamelody-core")
     }
 }
 
