@@ -13,20 +13,19 @@ JavaMelody: monitoring of JavaEE applications
 
 | Add-on        | Platform      |
 |:------------- |:------------- |
-| 0.1.0         | 6.8.0         |
 | 0.2.0         | 6.8.1         |
+| 0.1.0         | 6.8.0         |
 
 ## Installation and configuration
 
-1. add custom application component to your project via CUBA Studio
-(Project properties > Edit):
-* Artifact group: `com.haulmont.addon.cubajm`
-* Artifact name: `cuba-jm-global`
-* Version: 0.1.0
-2. configure monitoring URLs with the `cubajm.monitoringUrl` application
+1. Add custom application component to your project (change the version part if needed):
+
+    `com.haulmont.addon.cubajm:cuba-jm-global:0.2.0`
+  
+2. Configure monitoring URLs with the `cubajm.monitoringUrl` application
 property. Default values are `/core-jm/` and `/web-jm/` for middleware
 and web tiers respectively;
-3. configure monitoring dashboard authorization credentials with
+3. Configure monitoring dashboard authorization credentials with
 `cubajm.authorizedUserLogin` & `cubajm.authorizedUserPassword`
 application properties. The default values are `admin`, `admin`;
 
