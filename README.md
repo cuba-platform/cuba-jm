@@ -21,7 +21,7 @@ JavaMelody: monitoring of JavaEE applications
 
 1. Add custom application component to your project (change the version part if needed):
 
-    `com.haulmont.addon.cubajm:cuba-jm-global:0.2.0`
+    `com.haulmont.addon.cubajm:cuba-jm-global:0.3.0`
   
 2. Configure monitoring URLs with the `cubajm.monitoringUrl` application
 property. Default values are `/core-jm/` and `/web-jm/` for middleware
