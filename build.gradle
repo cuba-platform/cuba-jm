@@ -1,5 +1,5 @@
 buildscript {
-    ext.cubaVersion = '6.8.1'
+    ext.cubaVersion = '6.9.0'
     repositories {
         mavenLocal()
         maven {
@@ -22,7 +22,7 @@ def coreModule = project(":${modulePrefix}-core")
 def webModule = project(":${modulePrefix}-web")
 def jmModule = project(":${modulePrefix}-jm")
 
-def servletApi = 'org.apache.tomcat:tomcat-servlet-api:8.0.26'
+def servletApi = 'javax.servlet:javax.servlet-api:3.1.0'
 
 apply(plugin: 'idea')
 apply(plugin: 'cuba')
@@ -30,7 +30,7 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.haulmont.addon.cubajm'
-        version = '0.2.0'
+        version = '0.3.0'
         isSnapshot = true
     }
     tomcat {
