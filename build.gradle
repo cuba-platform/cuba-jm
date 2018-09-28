@@ -16,7 +16,7 @@
  */
 
 buildscript {
-    ext.cubaVersion = '6.9.0'
+    ext.cubaVersion = '6.10.0'
     repositories {
         mavenLocal()
         maven {
@@ -47,7 +47,7 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.haulmont.addon.cubajm'
-        version = '0.3.0'
+        version = '0.4.0'
         isSnapshot = true
     }
     tomcat {
@@ -127,7 +127,6 @@ configure(coreModule) {
         provided(servletApi)
         jdbc(hsql)
         testRuntime(hsql)
-
     }
 
     task cleanConf(description: 'Cleans up conf directory') {
