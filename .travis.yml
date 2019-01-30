@@ -15,4 +15,4 @@ cache:
 addons:
   apt:
     packages:
-  - openjdk-8-jdk
+      - openjdk-8-jdk
