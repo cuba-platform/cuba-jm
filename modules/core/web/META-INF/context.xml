@@ -16,6 +16,17 @@
   -->
 
 <Context>
+    <Resource
+        name="jdbc/CubaDS"
+        type="javax.sql.DataSource"
+        maxTotal="20"
+        maxIdle="2"
+        maxWaitMillis="5000"
+        driverClassName="org.hsqldb.jdbc.JDBCDriver"
+        url="jdbc:hsqldb:hsql://localhost/cubajm"
+        username="sa"
+        password=""/>
+
     <!-- Switch off session serialization -->
     <Manager pathname=""/>
 </Context>

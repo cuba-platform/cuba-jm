@@ -3,6 +3,8 @@ modules/*/build/
 build/*
 .gradle/*
 
+.idea/*
+
 *.iws
 *.ipr
 *.iml

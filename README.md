@@ -1,4 +1,7 @@
 # CUBA JavaMelody monitoring integration Add-on
+
+[![license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+
 ## Overview
 
 The add-on adds an ability to use JavaMelody monitoring in CUBA-based
@@ -13,6 +16,7 @@ JavaMelody: monitoring of JavaEE applications
 
 | Add-on        | Platform      |
 |:------------- |:------------- |
+| 0.5.0         | 7.0.0         |
 | 0.4.0         | 6.10.0        |
 | 0.3.1         | 6.9.0         |
 | 0.2.0         | 6.8.1         |
@@ -22,7 +26,7 @@ JavaMelody: monitoring of JavaEE applications
 
 1. Add custom application component to your project (change the version part if needed):
 
-    `com.haulmont.addon.cubajm:cuba-jm-global:0.4.0`
+    `com.haulmont.addon.cubajm:cuba-jm-global:0.5.0`
   
 2. Configure monitoring URLs with the `cubajm.monitoringUrl` application
 property. Default values are `/core-jm/` and `/web-jm/` for middleware
