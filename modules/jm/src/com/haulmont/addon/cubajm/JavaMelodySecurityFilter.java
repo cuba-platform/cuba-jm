@@ -60,10 +60,10 @@ public class JavaMelodySecurityFilter implements Filter {
                         String credentials = new String(Base64.decodeBase64(st.nextToken()), StandardCharsets.UTF_8);
                         int p = credentials.indexOf(":");
                         if (p != -1) {
-                            String _login = credentials.substring(0, p).trim();
-                            String _password = credentials.substring(p + 1).trim();
+                            String login = credentials.substring(0, p).trim();
+                            String password = credentials.substring(p + 1).trim();
 
-                            if (!login.equals(_login) || !password.equals(_password)) {
+                            if (!this.login.equals(login) || !this.password.equals(password)) {
                                 unauthorized(httpResponse, "Bad credentials");
                             }
 
