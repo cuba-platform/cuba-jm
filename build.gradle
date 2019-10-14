@@ -18,11 +18,29 @@
 buildscript {
     ext.cubaVersion = '7.1.0'
     repositories {
-        jcenter()
-        maven { url "https://dl.bintray.com/cuba-platform/main" }
+        mavenLocal()
+
+        if (System.getenv('HAULMONT_REPOSITORY_URL')) {
+            maven {
+                credentials {
+                    username System.getenv('HAULMONT_REPOSITORY_USER')
+                    password System.getenv('HAULMONT_REPOSITORY_PASSWORD')
+                }
+                url System.getenv('HAULMONT_REPOSITORY_URL')
+            }
+        }
+
+        maven {
+            url 'https://repo.cuba-platform.com/content/groups/work'
+            credentials {
+                username(rootProject.hasProperty('repoUser') ? rootProject['repoUser'] : 'cuba')
+                password(rootProject.hasProperty('repoPass') ? rootProject['repoPass'] : 'cuba123')
+            }
+        }
     }
     dependencies {
         classpath "com.haulmont.gradle:cuba-plugin:$cubaVersion"
+        classpath "com.haulmont.gradle:addon-gradle-plugin:1.1.2"
     }
 }
 
@@ -36,11 +54,12 @@ def jmModule = project(":${modulePrefix}-jm")
 def servletApi = 'javax.servlet:javax.servlet-api:3.1.0'
 
 apply(plugin: 'cuba')
+apply(plugin: 'addon-gradle-plugin')
 
 cuba {
     artifact {
         group = 'com.haulmont.addon.cubajm'
-        version = '0.6.0'
+        version = '0.6'
         isSnapshot = true
     }
     tomcat {
@@ -81,6 +100,7 @@ configure([globalModule, coreModule, webModule, jmModule]) {
     apply(plugin: 'java')
     apply(plugin: 'maven')
     apply(plugin: 'cuba')
+    apply(plugin: 'addon-gradle-plugin')
 
     dependencies {
         testCompile('junit:junit:4.12')
