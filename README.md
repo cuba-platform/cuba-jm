@@ -20,7 +20,7 @@ Also, you can install the add-on by coordinates choosing the required version of
 
 In case you want to install the add-on by manual editing or by building from sources see the complete add-ons installation guide in [CUBA Platform documentation](https://doc.cuba-platform.com/manual-latest/manual.html#app_components_usage).
 
-## From the Marketplace
+### From the Marketplace
 
 1. Open your application in CUBA Studio. Check the latest version of CUBA Studio on the [CUBA Platform site](https://www.cuba-platform.com/download/previous-studio/).
 2. Go to *CUBA -> Marketplace* in the main menu.
@@ -34,7 +34,7 @@ In case you want to install the add-on by manual editing or by building from sou
 4. Click *Install* and apply the changes.
 The add-on corresponding to the used platform version will be installed.
 
-## By Coordinates
+### By Coordinates
 
 1. Open your application in CUBA Studio. Check the latest version of CUBA Studio on the [CUBA Platform site](https://www.cuba-platform.com/download/previous-studio/).
 2. Go to *CUBA -> Marketplace* in the main menu.
