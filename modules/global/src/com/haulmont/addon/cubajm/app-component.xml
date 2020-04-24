@@ -22,6 +22,8 @@
             name="global">
         <artifact appJar="true"
                   name="cuba-jm-global"/>
+        <property name="cuba.creditsConfig"
+                  value="+com/haulmont/addon/cubajm/credits.xml"/>
     </module>
     <module blocks="core"
             dependsOn="global,jm"
