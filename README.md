@@ -50,7 +50,7 @@ where `<add-on version>` is compatible with the used version of the CUBA platfor
 
  | Platform Version| Add-on Version|
 |:------------- |:------------- |
-| 7.2.x         | 0.7.0         |
+| 7.2.x         | 0.7.1         |
 | 7.1.0         | 0.6.0         |
 | 7.0.0         | 0.5.1         |
 | 6.10.0        | 0.4.0         |
