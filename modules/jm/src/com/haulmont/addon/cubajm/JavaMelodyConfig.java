@@ -21,6 +21,7 @@ import com.haulmont.cuba.core.config.Config;
 import com.haulmont.cuba.core.config.Property;
 import com.haulmont.cuba.core.config.Source;
 import com.haulmont.cuba.core.config.SourceType;
+import com.haulmont.cuba.core.config.defaults.DefaultBoolean;
 import com.haulmont.cuba.core.config.defaults.DefaultString;
 
 /**
@@ -49,4 +50,13 @@ public interface JavaMelodyConfig extends Config {
      */
     @Property("cubajm.monitoringUrl")
     String getMonitoringUrl();
+
+    @Property("cubajm.monitoringServerUrl")
+    String getJavaMelodyServerAddress();
+
+
+    @Property("javamelody.centralized.monitoring")
+    @DefaultBoolean(false)
+    boolean isJavaMelodyCentralizedMonitoring();
+
 }
