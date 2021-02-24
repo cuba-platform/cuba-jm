@@ -18,22 +18,23 @@
 package com.haulmont.addon.cubajm;
 
 import com.haulmont.bali.util.ReflectionHelper;
+import com.haulmont.cuba.core.config.AppPropertiesLocator;
+import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextInitializedEvent;
 import net.bull.javamelody.MonitoringFilter;
 import net.bull.javamelody.SessionListener;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.servlet.*;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component("cubajm_JavaMelodyInitializer")
@@ -46,15 +47,22 @@ public class JavaMelodyInitializer {
 
     @Inject
     private ServletRegistrationManager servletRegistrationManager;
-
     @Inject
     private JavaMelodyConfig javaMelodyConfig;
 
     private boolean initialized;
     private boolean skipRegistration;
-
+    @Inject
+    private AppPropertiesLocator appPropertiesLocator;
     private String jmFilterUrl;
     private String filtersNameBase;
+    @Inject
+    private ApplicationContext applicationContext;
+
+
+    private boolean getClusterStatus() {
+        return BooleanUtils.toBoolean(AppContext.getProperty("cuba.cluster.enabled"));
+    }
 
     @EventListener
     public void initialize(ServletContextInitializedEvent e) {
@@ -67,13 +75,18 @@ public class JavaMelodyInitializer {
         }
 
         if (!initialized) {
-            initializeSecurityFilter(e);
+            if (!getClusterStatus()) {
 
-            initializeJavaMelodyFilter(e);
+            } else {
 
-            initializeJavamelodyListener(e);
+                initializeSecurityFilter(e);
 
-            initialized = true;
+                initializeJavaMelodyFilter(e);
+
+                initializeJavamelodyListener(e);
+
+                initialized = true;
+            }
         }
     }
 
@@ -85,7 +98,7 @@ public class JavaMelodyInitializer {
             skipRegistration = true;
 
             log.info("Value of application property '{}' is not defined." +
-                    "JavaMelody monitoring will not be enabled for this application block",
+                            "JavaMelody monitoring will not be enabled for this application block",
                     JAVAMELODY_FILTER_URL_PROP);
 
             return;

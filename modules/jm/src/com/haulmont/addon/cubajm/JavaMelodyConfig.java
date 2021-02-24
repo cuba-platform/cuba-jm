@@ -49,4 +49,7 @@ public interface JavaMelodyConfig extends Config {
      */
     @Property("cubajm.monitoringUrl")
     String getMonitoringUrl();
+
+    @Property("cubajm.nodeNames")
+    String getNodeNames();
 }

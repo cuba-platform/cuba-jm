@@ -35,6 +35,8 @@
                   value="+com/haulmont/addon/cubajm/spring.xml"/>
         <property name="cubajm.monitoringUrl"
                   value="/core-jm/"/>
+        <property name="cubajm.nodeNames"
+                  value="web, core"/>
     </module>
     <module blocks="web"
             dependsOn="global,jm"
