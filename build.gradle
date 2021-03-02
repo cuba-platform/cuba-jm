@@ -44,7 +44,7 @@ buildscript {
     }
 }
 
-def modulePrefix = 'cuba-jm'
+def modulePrefix = 'cuba-jm-test'
 
 def globalModule = project(":${modulePrefix}-global")
 def coreModule = project(":${modulePrefix}-core")
@@ -238,3 +238,6 @@ task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefi
 }
 restart.finalizedBy start
 
+task buildUberJar(type: CubaUberJarBuilding) {
+    appProperties = ['cuba.automaticDatabaseUpdate': true]
+}

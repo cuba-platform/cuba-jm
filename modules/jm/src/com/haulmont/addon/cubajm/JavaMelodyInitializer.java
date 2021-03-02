@@ -34,7 +34,10 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.servlet.*;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Vector;
 import java.util.stream.Collectors;
 
 @Component("cubajm_JavaMelodyInitializer")
@@ -204,4 +207,29 @@ public class JavaMelodyInitializer {
 
         return monitoringFilters.size() > 1;
     }
+
+    //------------------------------
+
+//    @EventListener
+//    public void applicationStarted(AppContextStartedEvent event) throws ExecutionException, InterruptedException {
+//
+//        ExecutorService service;
+//        if (isSingleWar) {
+//            service = Executors.newFixedThreadPool(1);
+//        } else {
+//            service = Executors.newFixedThreadPool(2);
+//            service.submit(new JavaMelodyRegistrarCore()).get();
+//        }
+//        service.submit(new JavaMelodyRegistrar()).get();
+//        service.shutdown();
+//    }
+//
+//    @EventListener
+//    public void applicationStopped(AppContextStartedEvent event) {
+//        try {
+//            MonitoringFilter.unregisterApplicationNodeInCollectServer();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

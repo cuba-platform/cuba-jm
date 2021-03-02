@@ -176,8 +176,8 @@
 
     </module>
 
-    <module name="SuppressionFilter">
-        <property name="file" value="config/checkstyle/checkstyle-ignore.xml" />
-    </module>
+<!--    <module name="SuppressionFilter">-->
+<!--        <property name="file" value="config/checkstyle/checkstyle-ignore.xml" />-->
+<!--    </module>-->
 
 </module>
