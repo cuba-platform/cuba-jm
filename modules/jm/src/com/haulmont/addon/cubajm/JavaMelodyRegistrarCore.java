@@ -29,27 +29,19 @@ import java.util.concurrent.Callable;
 
 public class JavaMelodyRegistrarCore implements Callable<Boolean> {
 
-//    @Inject
-//    private Logger log;
-//    @Inject
-//    GlobalConfig globalConfig;
-
     @Override
-    public Boolean call() throws Exception {
+    public Boolean call() {
 
         String applicationName = null;
         String address = null;
         URL collectServerUrl = null;
-
-//        String address = globalConfig.getWebHostName();
-//        String applicationName = globalConfig.getWebContextName();
 
         try {
             address = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-//
+
         try {
             applicationName = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -58,14 +50,15 @@ public class JavaMelodyRegistrarCore implements Callable<Boolean> {
 
         try {
             collectServerUrl = new URL("http://javamelody:1337/");
+//            collectServerUrl = new URL("http://localhost:1337/");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 
-
         URL applicationCoreNodeUrl = null;
         try {
             applicationCoreNodeUrl = new URL("http://" + address + ":" + 8079 + "/app-core");
+            //applicationCoreNodeUrl = new URL("http://" + address + ":" + 8079 + "/" + AppContext.getProperty("cuba.webContextName"));
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

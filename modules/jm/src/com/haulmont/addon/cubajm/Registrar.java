@@ -20,10 +20,9 @@
 package com.haulmont.addon.cubajm;
 
 import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.core.sys.events.AppContextStartedEvent;
 import net.bull.javamelody.MonitoringFilter;
-import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.context.event.EventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -32,58 +31,84 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
-public class Registrar {
+public class Registrar implements AppContext.Listener {
 
-    /*
+    private final Logger log = LoggerFactory.getLogger(Registrar.class);
 
-    cuba.useLocalServiceInvocation
-    При установке данного свойства в true блоки Web Client и Web Portal вызывают сервисы Middleware в обход сетевого стека,
-    что положительно сказывается на производительности системы. Это возможно в случае быстрого развертывания, единого WAR и единого Uber JAR.
-    В других вариантах развертывания данное свойство необходимо установить в false.
+    public Registrar() {
+        AppContext.addListener(this);
+    }
 
-    Значение по умолчанию: true
-
-    Используется в блоках Web Client и Web Portal.
-
-     */
-
-    private static boolean isSingleWar = false;
-
-//    @EventListener
-//    public void isSingleWarDeployment(ServletContextInitializedEvent e) {
-//        if (singleWarDeployment(e.getSource())) {
-//            isSingleWar = true;
-//        }
-//    }
-
-    @EventListener
-    public void applicationStarted(AppContextStartedEvent event) throws ExecutionException, InterruptedException {
-
-//        if (BooleanUtils.toBoolean(AppContext.getProperty("cuba.useLocalServiceInvocation")))
-
-
+    @Override
+    public void applicationStarted() {
         ExecutorService service;
-        if (isSingleWar) {
-            service = Executors.newFixedThreadPool(1);
-            service.submit(new JavaMelodyRegistrar()).get();
-            service.shutdown();
-        } else {
-            service = Executors.newFixedThreadPool(2);
-            service.submit(new JavaMelodyRegistrarCore()).get();
-            service.submit(new JavaMelodyRegistrar()).get();
-            service.shutdown();
+        try {
+            if (AppContext.getAppComponents().getBlock().equals("core")) {
+                service = Executors.newFixedThreadPool(1);
+                service.submit(new JavaMelodyRegistrarCore()).get();
+                service.shutdown();
+            }
+            if (AppContext.getAppComponents().getBlock().equals("web")) {
+                service = Executors.newFixedThreadPool(1);
+                service.submit(new JavaMelodyRegistrar()).get();
+                service.shutdown();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
 
     }
 
-    @EventListener
-    public void applicationStopped(AppContextStartedEvent event) {
+    @Override
+    public void applicationStopped() {
         try {
             MonitoringFilter.unregisterApplicationNodeInCollectServer();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+//    @EventListener
+//    public void applicationStarted(AppContextStartedEvent event) throws ExecutionException, InterruptedException {
+////        ((ServletContext) this.source).getServletContextName();
+////        event.getSource()
+//
+//
+////        if (BooleanUtils.toBoolean(AppContext.getProperty("cuba.useLocalServiceInvocation")))
+//
+////        try {
+////            File file = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toString());
+////            JarFile jarFile = new JarFile(file);
+////
+////        } catch (IOException e) {
+////            log.error("file not found1!");
+////        }
+//
+//
+//
+//        ExecutorService service;
+//        if (isSingleWar) {
+//            service = Executors.newFixedThreadPool(1);
+//            service.submit(new JavaMelodyRegistrar()).get();
+//            service.shutdown();
+//        } else {
+//            service = Executors.newFixedThreadPool(2);
+//            service.submit(new JavaMelodyRegistrarCore()).get();
+//            service.submit(new JavaMelodyRegistrar()).get();
+//            service.shutdown();
+//        }
+//
+//    }
+
+//    @EventListener
+//    public void applicationStopped(AppContextStartedEvent event) {
+//        try {
+//            MonitoringFilter.unregisterApplicationNodeInCollectServer();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
 
 //    private boolean singleWarDeployment(ServletContext sc) {
 //        List<? extends FilterRegistration> monitoringFilters = sc.getFilterRegistrations().values()

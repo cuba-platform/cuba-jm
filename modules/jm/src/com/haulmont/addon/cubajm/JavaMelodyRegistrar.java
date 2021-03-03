@@ -19,11 +19,8 @@
 
 package com.haulmont.addon.cubajm;
 
-import com.haulmont.cuba.core.global.GlobalConfig;
 import net.bull.javamelody.MonitoringFilter;
-import org.slf4j.Logger;
 
-import javax.inject.Inject;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,17 +29,8 @@ import java.util.concurrent.Callable;
 
 public class JavaMelodyRegistrar implements Callable<Boolean> {
 
-    @Inject
-    private JavaMelodyConfig javaMelodyConfig;
-
-    @Inject
-    private GlobalConfig globalConfig;
-
-    @Inject
-    private Logger log;
-
     @Override
-    public Boolean call() throws Exception {
+    public Boolean call() {
         String address = null;
         try {
             address = InetAddress.getLocalHost().getHostAddress();
@@ -53,6 +41,7 @@ public class JavaMelodyRegistrar implements Callable<Boolean> {
         URL collectServerUrl = null;
         try {
             collectServerUrl = new URL("http://javamelody:1337/");
+//            collectServerUrl = new URL("http://localhost:1337/");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -67,6 +56,7 @@ public class JavaMelodyRegistrar implements Callable<Boolean> {
         URL applicationWebNodeUrl = null;
         try {
             applicationWebNodeUrl = new URL("http://" + address + ":" + 8080 + "/app");
+//            applicationWebNodeUrl = new URL(AppContext.getProperty("cuba.webAppUrl"));
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -76,8 +66,6 @@ public class JavaMelodyRegistrar implements Callable<Boolean> {
         return true;
     }
 }
-
-
 
 //        String javaMelodyServerAddress = javaMelodyConfig.getJavaMelodyServerAddress();
 //        String webAppUrl = globalConfig.getWebAppUrl();

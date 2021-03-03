@@ -69,6 +69,7 @@ public class JavaMelodyInitializer {
 
     @EventListener
     public void initialize(ServletContextInitializedEvent e) {
+
         if (singleWarDeployment(e.getSource())) {
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
                     "by the URL defined in application property %s for the \"core\" module", JAVAMELODY_FILTER_URL_PROP);
@@ -208,28 +209,4 @@ public class JavaMelodyInitializer {
         return monitoringFilters.size() > 1;
     }
 
-    //------------------------------
-
-//    @EventListener
-//    public void applicationStarted(AppContextStartedEvent event) throws ExecutionException, InterruptedException {
-//
-//        ExecutorService service;
-//        if (isSingleWar) {
-//            service = Executors.newFixedThreadPool(1);
-//        } else {
-//            service = Executors.newFixedThreadPool(2);
-//            service.submit(new JavaMelodyRegistrarCore()).get();
-//        }
-//        service.submit(new JavaMelodyRegistrar()).get();
-//        service.shutdown();
-//    }
-//
-//    @EventListener
-//    public void applicationStopped(AppContextStartedEvent event) {
-//        try {
-//            MonitoringFilter.unregisterApplicationNodeInCollectServer();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 }
