@@ -20,9 +20,12 @@
 package com.haulmont.addon.cubajm;
 
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.events.AppContextStartedEvent;
+import com.haulmont.cuba.core.sys.events.AppContextStoppedEvent;
 import net.bull.javamelody.MonitoringFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -31,24 +34,32 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
-public class Registrar implements AppContext.Listener {
+// implements AppContext.Listener
+public class Registrar {
 
     private final Logger log = LoggerFactory.getLogger(Registrar.class);
 
-    public Registrar() {
-        AppContext.addListener(this);
-    }
+//    public Registrar() {
+//        AppContext.addListener(this);
+//    }
 
-    @Override
-    public void applicationStarted() {
+//    @Override
+    @EventListener
+    public void applicationStarted(AppContextStartedEvent event) {
         ExecutorService service;
         try {
             if (AppContext.getAppComponents().getBlock().equals("core")) {
+                System.out.println("\n\n\n");
+                System.out.println("IN CORE MODULE");
+                System.out.println("\n\n\n");
                 service = Executors.newFixedThreadPool(1);
                 service.submit(new JavaMelodyRegistrarCore()).get();
                 service.shutdown();
             }
             if (AppContext.getAppComponents().getBlock().equals("web")) {
+                System.out.println("\n\n\n");
+                System.out.println("IN WEB MODULE");
+                System.out.println("\n\n\n");
                 service = Executors.newFixedThreadPool(1);
                 service.submit(new JavaMelodyRegistrar()).get();
                 service.shutdown();
@@ -59,8 +70,9 @@ public class Registrar implements AppContext.Listener {
 
     }
 
-    @Override
-    public void applicationStopped() {
+//    @Override
+    @EventListener
+    public void applicationStopped(AppContextStoppedEvent event) {
         try {
             MonitoringFilter.unregisterApplicationNodeInCollectServer();
         } catch (IOException e) {

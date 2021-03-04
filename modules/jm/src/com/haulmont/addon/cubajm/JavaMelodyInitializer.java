@@ -71,6 +71,9 @@ public class JavaMelodyInitializer {
     public void initialize(ServletContextInitializedEvent e) {
 
         if (singleWarDeployment(e.getSource())) {
+            System.out.println("\n\n\n");
+            System.out.println("     singleWarDeployment    ");
+            System.out.println("\n\n\n");
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
                     "by the URL defined in application property %s for the \"core\" module", JAVAMELODY_FILTER_URL_PROP);
             log.info(msg);
@@ -80,8 +83,14 @@ public class JavaMelodyInitializer {
 
         if (!initialized) {
             if (!getClusterStatus()) {
-
+                System.out.println("\n\n\n");
+                System.out.println("     !getClusterStatus()    ");
+                System.out.println("\n\n\n");
             } else {
+
+                System.out.println("\n\n\n");
+                System.out.println("     getClusterStatus()    ");
+                System.out.println("\n\n\n");
 
                 initializeSecurityFilter(e);
 
