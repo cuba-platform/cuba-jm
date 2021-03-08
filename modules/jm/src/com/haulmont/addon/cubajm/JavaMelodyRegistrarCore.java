@@ -19,9 +19,13 @@
 
 package com.haulmont.addon.cubajm;
 
+import com.haulmont.cuba.core.config.AppPropertiesLocator;
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
 import net.bull.javamelody.MonitoringFilter;
+import org.springframework.context.ApplicationContext;
 
+import javax.inject.Inject;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,7 +34,6 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 
 public class JavaMelodyRegistrarCore implements Callable<Boolean> {
-
     @Override
     public Boolean call() throws UnknownHostException {
 
@@ -61,7 +64,7 @@ public class JavaMelodyRegistrarCore implements Callable<Boolean> {
         try {
             applicationCoreNodeUrl = new URL("http://" + address + ":"
                     + AppContext.getProperty("cuba.webPort") + "/" + AppContext.getProperty("cuba.webContextName"));
-            //applicationCoreNodeUrl = new URL("http://" + address + ":" + 8079 + "/" + AppContext.getProperty("cuba.webContextName"));
+//            applicationCoreNodeUrl = new URL("http://" + address + ":" + 7777 + "/" + AppContext.getProperty("cuba.webContextName"));
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -71,6 +74,8 @@ public class JavaMelodyRegistrarCore implements Callable<Boolean> {
         System.out.println("HOST NAME + " + AppContext.getProperty("cuba.webHostName"));
         System.out.println("HOST NAME INET ADDRESS" + InetAddress.getLocalHost().getHostName());
         System.out.println("\n\n\n");
+
+
 
         MonitoringFilter.registerApplicationNodeInCollectServer("CORE" +
                 String.valueOf((new Random()).nextInt(100)), collectServerUrl, applicationCoreNodeUrl);

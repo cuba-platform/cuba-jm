@@ -107,6 +107,9 @@ public class JavaMelodyInitializer {
         log.info("Registering JavaMelody security filter");
 
         jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
+
+//        jmFilterUrl = "/app-core/";
+
         if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
             skipRegistration = true;
 
@@ -129,6 +132,12 @@ public class JavaMelodyInitializer {
         e.getSource().addFilter(secFilterName, securityFilter)
                 .addMappingForUrlPatterns(
                         EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, jmFilterUrl);
+
+        System.out.println("\n\n\n");
+        System.out.println("JmFilterUrl =   " + jmFilterUrl);
+        System.out.println("MonitoringPathParam =    " + MONITORING_PATH_PARAM);
+        System.out.println("\n\n\n");
+
 
         log.info("JavaMelody security filter registered");
     }
@@ -186,6 +195,28 @@ public class JavaMelodyInitializer {
         javamelody.setInitParameter(MONITORING_PATH_PARAM, jmFilterUrl);
         javamelody.addMappingForUrlPatterns(
                 EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, "/*");
+
+        javamelody.getUrlPatternMappings().forEach(System.out::println);
+        System.out.println("===================================");
+        javamelody.getServletNameMappings().forEach(System.out::println);
+        System.out.println("====================================");
+        javamelody.getInitParameters().forEach((s, t) -> System.out.println("KEY;VALUE: " + s + " ; " + t));
+        System.out.println("====================================");
+        servletContext.getServletRegistrations().forEach((s, sr) -> {
+            System.out.println(sr.getName());
+            sr.getMappings().forEach(System.out::println);
+            System.out.println("================================================================================");
+        });
+        servletContext.getFilterRegistrations().forEach((s, fr) -> {
+            System.out.println(fr.getName());
+            System.out.println("====================================");
+        });
+
+
+        System.out.println("\n\n\n");
+        System.out.println("FILTER NAME  =   " + filterName);
+        System.out.println("FILTER NAME BASE =   " + filtersNameBase);
+        System.out.println("\n\n\n");
 
         log.info("JavaMelody monitoring filter registered");
     }

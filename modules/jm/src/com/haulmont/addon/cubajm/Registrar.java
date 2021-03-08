@@ -20,6 +20,7 @@
 package com.haulmont.addon.cubajm;
 
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.events.AppContextInitializedEvent;
 import com.haulmont.cuba.core.sys.events.AppContextStartedEvent;
 import com.haulmont.cuba.core.sys.events.AppContextStoppedEvent;
 import net.bull.javamelody.MonitoringFilter;
@@ -43,9 +44,10 @@ public class Registrar {
 //        AppContext.addListener(this);
 //    }
 
+
 //    @Override
-    @EventListener
-    public void applicationStarted(AppContextStartedEvent event) {
+    @EventListener //AppContextStartedEvent
+    public void applicationStarted(AppContextInitializedEvent event) {
         ExecutorService service;
         try {
             if (AppContext.getAppComponents().getBlock().equals("core")) {
