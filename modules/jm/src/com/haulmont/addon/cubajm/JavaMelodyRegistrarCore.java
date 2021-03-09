@@ -62,7 +62,7 @@ public class JavaMelodyRegistrarCore implements Callable<Boolean> {
 
         URL applicationCoreNodeUrl = null;
         try {
-            applicationCoreNodeUrl = new URL("http://" + address + ":"
+            applicationCoreNodeUrl = new URL("http://" + applicationName + "@" + address + ":"
                     + AppContext.getProperty("cuba.webPort") + "/" + AppContext.getProperty("cuba.webContextName"));
 //            applicationCoreNodeUrl = new URL("http://" + address + ":" + 7777 + "/" + AppContext.getProperty("cuba.webContextName"));
         } catch (MalformedURLException e) {

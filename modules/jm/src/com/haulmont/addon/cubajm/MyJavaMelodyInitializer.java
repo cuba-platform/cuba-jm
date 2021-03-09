@@ -19,6 +19,7 @@ package com.haulmont.addon.cubajm;
 
 import com.haulmont.bali.util.ReflectionHelper;
 import com.haulmont.cuba.core.config.AppPropertiesLocator;
+import com.haulmont.cuba.core.global.GlobalConfig;
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextInitializedEvent;
@@ -41,12 +42,12 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 //@Component("cubajm_JavaMelodyInitializer")
-public class JavaMelodyInitializer {
+public class MyJavaMelodyInitializer {
 
     private static final String JAVAMELODY_FILTER_URL_PROP = "cubajm.monitoringUrl";
     private static final String MONITORING_PATH_PARAM = "monitoring-path";
 
-    private final Logger log = LoggerFactory.getLogger(JavaMelodyInitializer.class);
+    private final Logger log = LoggerFactory.getLogger(MyJavaMelodyInitializer.class);
 
     @Inject
     private ServletRegistrationManager servletRegistrationManager;
@@ -61,6 +62,8 @@ public class JavaMelodyInitializer {
     private String filtersNameBase;
     @Inject
     private ApplicationContext applicationContext;
+    @Inject
+    private GlobalConfig globalConfig;
 
 
     private boolean getClusterStatus() {
@@ -85,7 +88,7 @@ public class JavaMelodyInitializer {
             if (!getClusterStatus()) {
             } else {
 
-                initializeSecurityFilter(e);
+//                initializeSecurityFilter(e);
 
                 initializeJavaMelodyFilter(e);
 
@@ -99,11 +102,16 @@ public class JavaMelodyInitializer {
     private void initializeSecurityFilter(ServletContextInitializedEvent e) {
         log.info("Registering JavaMelody security filter");
 
-        jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
+//        jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
 
-        jmFilterUrl = "/app-core/";
+        //jmFilterUrl = "/app-core/";
+        jmFilterUrl = "/" + applicationContext.getEnvironment().getProperty("cuba.webContextName");
 
-        if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
+        System.out.println("\n\n\n");
+        System.out.println("jmFilterUrl =   " + jmFilterUrl);
+        System.out.println("\n\n\n");
+
+        if (jmFilterUrl == null || jmFilterUrl.equals("/")) {
             skipRegistration = true;
 
             log.info("Value of application property '{}' is not defined." +
@@ -122,6 +130,7 @@ public class JavaMelodyInitializer {
         Filter securityFilter = servletRegistrationManager.createFilter(e.getApplicationContext(),
                 JavaMelodySecurityFilter.class.getName());
 
+
         e.getSource().addFilter(secFilterName, securityFilter)
                 .addMappingForUrlPatterns(
                         EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, jmFilterUrl);
@@ -130,16 +139,15 @@ public class JavaMelodyInitializer {
     }
 
     private void initializeJavaMelodyFilter(ServletContextInitializedEvent e) {
-        if (skipRegistration) {
-            return;
-        }
+
+        jmFilterUrl = "/" + applicationContext.getEnvironment().getProperty("cuba.webContextName");
 
         log.info("Registering JavaMelody monitoring filter");
 
-        Filter javamelodyFilter = servletRegistrationManager.createFilter(e.getApplicationContext(),
+        MonitoringFilter javamelodyFilter = (MonitoringFilter) servletRegistrationManager.createFilter(e.getApplicationContext(),
                 MonitoringFilter.class.getName());
 
-        String filterName = filtersNameBase + "javamelody_filter";
+        String filterName = "javamelody";
 
         final ServletContext servletContext = e.getSource();
         try {
@@ -160,7 +168,6 @@ public class JavaMelodyInitializer {
                     if (MONITORING_PATH_PARAM.equals(name)) {
                         return jmFilterUrl;
                     }
-
                     return null;
                 }
 
@@ -176,28 +183,33 @@ public class JavaMelodyInitializer {
             throw new RuntimeException("ServletException occurred while initializing JavaMelody filter", ex);
         }
 
-        FilterRegistration.Dynamic javamelody = servletContext
-                .addFilter(filterName, javamelodyFilter);
+        FilterRegistration.Dynamic javamelody = servletContext.addFilter(filterName, javamelodyFilter);
 
         javamelody.setInitParameter(MONITORING_PATH_PARAM, jmFilterUrl);
+        javamelody.setAsyncSupported(true);
         javamelody.addMappingForUrlPatterns(
                 EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, "/*");
+
+
+        System.out.println("\n\n\n");
+        System.out.println("javamelody init parameters");
+        javamelody.getInitParameters().forEach((s, s1) -> System.out.println(s + " : " + s1));
+        System.out.println("\n\n\n");
 
         log.info("JavaMelody monitoring filter registered");
     }
 
     private void initializeJavamelodyListener(ServletContextInitializedEvent e) {
-        if (skipRegistration) {
-            return;
-        }
 
         log.info("Registering JavaMelody listener");
 
-        Class<SessionListener> sessionListenerClass = ReflectionHelper.getClass(SessionListener.class.getName());
+        //Class<SessionListener> sessionListenerClass = ReflectionHelper.getClass(SessionListener.class.getName());
+
+//SessionListener listener = new SessionListener();
 
         ServletContext servletContext = e.getSource();
         try {
-            servletContext.addListener(servletContext.createListener(sessionListenerClass));
+            servletContext.addListener(servletContext.createListener(SessionListener.class));
         } catch (ServletException ex) {
             log.info("Servlet exception occurred while registering JavaMelody Security filter: {}", e);
         }
@@ -210,7 +222,6 @@ public class JavaMelodyInitializer {
                 .stream()
                 .filter(fr -> MonitoringFilter.class.getName().equals(fr.getClassName()))
                 .collect(Collectors.toList());
-
         return monitoringFilters.size() > 1;
     }
 

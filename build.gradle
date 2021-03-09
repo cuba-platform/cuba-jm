@@ -144,6 +144,7 @@ configure(coreModule) {
         compile(jmModule)
         jdbc(hsql)
         testRuntime(hsql)
+        compileOnly(servletApi)
     }
 
     task cleanConf(description: 'Cleans up conf directory', type: Delete) {

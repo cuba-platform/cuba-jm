@@ -46,7 +46,6 @@ public class JavaMelodyRegistrar implements Callable<Boolean> {
         URL collectServerUrl = null;
         try {
             collectServerUrl = new URL("http://javamelody:1337/");
-//            collectServerUrl = new URL("http://localhost:1337/");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -60,11 +59,8 @@ public class JavaMelodyRegistrar implements Callable<Boolean> {
 
         URL applicationWebNodeUrl = null;
         try {
-            //applicationWebNodeUrl = new URL("http://" + address + ":" + 8080 + "/app");
             applicationWebNodeUrl = new URL("http://" + address + ":"
                     + AppContext.getProperty("cuba.webPort") + "/" + AppContext.getProperty("cuba.webContextName"));
-//            applicationWebNodeUrl = new URL(AppContext.getProperty("cuba.webAppUrl"));
-
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -80,18 +76,3 @@ public class JavaMelodyRegistrar implements Callable<Boolean> {
         return true;
     }
 }
-
-//        String javaMelodyServerAddress = javaMelodyConfig.getJavaMelodyServerAddress();
-//        String webAppUrl = globalConfig.getWebAppUrl();
-//        String appName = globalConfig.getWebContextName();
-//        log.info("Registering application {} with URL {} in javamelody server: {}", appName, webAppUrl, javaMelodyServerAddress);
-//        // url of the collect server
-//        try {
-//            URL collectServerUrl = new URL(javaMelodyServerAddress);
-//            // url of the application node to be called by the collect server to collect data
-//            URL applicationNodeUrl = new URL(webAppUrl);
-//            MonitoringFilter.registerApplicationNodeInCollectServer(
-//                    appName, collectServerUrl, applicationNodeUrl);
-//        } catch (MalformedURLException e) {
-//            log.error("Cannot register application in the monitoring server: "+e.getMessage(), e);
-//        }
