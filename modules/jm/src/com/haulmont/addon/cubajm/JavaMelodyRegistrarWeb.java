@@ -29,10 +29,9 @@ import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
-public class JavaMelodyRegistrar implements Callable<Boolean> {
+public class JavaMelodyRegistrarWeb implements Callable<Boolean> {
 
-    public JavaMelodyRegistrar() {
-    }
+    public JavaMelodyRegistrarWeb() {}
 
     @Override
     public Boolean call() throws UnknownHostException {

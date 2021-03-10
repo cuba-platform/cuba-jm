@@ -55,7 +55,6 @@ public interface JavaMelodyConfig extends Config {
     String getNodeNames();
 
 
-
     @Property("cubajm.monitoringServerUrl")
     String getJavaMelodyServerAddress();
 

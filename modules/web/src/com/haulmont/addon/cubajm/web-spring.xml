@@ -32,4 +32,6 @@
             </map>
         </property>
     </bean>
+
+    <import resource="classpath:net/bull/javamelody/monitoring-spring-aspectj.xml" />
 </beans>

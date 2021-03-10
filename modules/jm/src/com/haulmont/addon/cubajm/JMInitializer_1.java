@@ -17,18 +17,15 @@
  *
  */
 
-package com.haulmont.addon.cubajm;import com.haulmont.addon.cubajm.JavaMelodyConfig;
-import com.haulmont.addon.cubajm.JavaMelodySecurityFilter;
-import com.haulmont.addon.cubajm.MyJavaMelodyInitializer;
-import com.haulmont.cuba.core.config.AppPropertiesLocator;
-import com.haulmont.cuba.core.global.GlobalConfig;
+package com.haulmont.addon.cubajm;
+
 import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
+import com.haulmont.cuba.core.sys.servlet.events.ServletContextDestroyedEvent;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextInitializedEvent;
 import net.bull.javamelody.MonitoringFilter;
 import net.bull.javamelody.SessionListener;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -36,40 +33,30 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.servlet.*;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import javax.servlet.*;
 
-//@Component
-public class CoreModuleInitializer {
+@Component
+public class JMInitializer_1 {
     private static final String JAVAMELODY_FILTER_URL_PROP = "cubajm.monitoringUrl";
     private static final String MONITORING_PATH_PARAM = "monitoring-path";
 
-    private final Logger log = LoggerFactory.getLogger(MyJavaMelodyInitializer.class);
+    private final Logger log = LoggerFactory.getLogger(JMInitializer_1.class);
 
     @Inject
     private ServletRegistrationManager servletRegistrationManager;
-    @Inject
-    private JavaMelodyConfig javaMelodyConfig;
 
     private boolean initialized;
     private boolean skipRegistration;
-    @Inject
-    private AppPropertiesLocator appPropertiesLocator;
     private String jmFilterUrl;
-    private String filtersNameBase;
-    @Inject
-    private ApplicationContext applicationContext;
-    @Inject
-    private GlobalConfig globalConfig;
-
-
-    private boolean getClusterStatus() {
-        return BooleanUtils.toBoolean(AppContext.getProperty("cuba.cluster.enabled"));
-    }
 
     @EventListener
     public void initialize(ServletContextInitializedEvent e) {
@@ -81,69 +68,37 @@ public class CoreModuleInitializer {
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
                     "by the URL defined in application property %s for the \"core\" module", JAVAMELODY_FILTER_URL_PROP);
             log.info(msg);
-
             return;
         }
 
-        if (!initialized) {
-            if (!getClusterStatus()) {
-            } else {
+//        initializeSecurityFilter(e);
 
-//                initializeSecurityFilter(e);
+        initializeJavaMelodyFilter(e);
 
-                initializeJavaMelodyFilter(e);
+        initializeJavamelodyListener(e);
 
-                initializeJavamelodyListener(e);
-
-                initialized = true;
-            }
+        ExecutorService executor;
+        try {
+            executor = Executors.newFixedThreadPool(1);
+            executor.submit(new RegistrarOfNodesOnCollectorServer()).get();
+            executor.shutdown();
+        } catch (ExecutionException | InterruptedException ex) {
+            ex.printStackTrace();
         }
     }
 
-    private void initializeSecurityFilter(ServletContextInitializedEvent e) {
-        log.info("Registering JavaMelody security filter");
-
-//        jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
-
-        //jmFilterUrl = "/app-core/";
-        jmFilterUrl = "/" + applicationContext.getEnvironment().getProperty("cuba.webContextName");
-
-        System.out.println("\n\n\n");
-        System.out.println("jmFilterUrl =   " + jmFilterUrl);
-        System.out.println("\n\n\n");
-
-        if (jmFilterUrl == null || jmFilterUrl.equals("/")) {
-            skipRegistration = true;
-
-            log.info("Value of application property '{}' is not defined." +
-                            "JavaMelody monitoring will not be enabled for this application block",
-                    JAVAMELODY_FILTER_URL_PROP);
-
-            return;
+    @EventListener
+    public void destroy(ServletContextDestroyedEvent event) {
+        try {
+            MonitoringFilter.unregisterApplicationNodeInCollectServer();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        filtersNameBase = StringUtils.replaceEach(jmFilterUrl,
-                new String[]{"/", "*"},
-                new String[]{"_", ""})
-                .substring(1);
-        String secFilterName = filtersNameBase + "javamelody_security_filter";
-
-        Filter securityFilter = servletRegistrationManager.createFilter(e.getApplicationContext(),
-                JavaMelodySecurityFilter.class.getName());
-
-        e.getSource().addFilter(secFilterName, securityFilter)
-                .addMappingForUrlPatterns(
-                        EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, jmFilterUrl);
-
-        log.info("JavaMelody security filter registered");
     }
 
     private void initializeJavaMelodyFilter(ServletContextInitializedEvent e) {
-
-        jmFilterUrl = "/" + applicationContext.getEnvironment().getProperty("cuba.webContextName");
-
+        jmFilterUrl = "/monitoring";
         log.info("Registering JavaMelody monitoring filter");
-
         MonitoringFilter javamelodyFilter = (MonitoringFilter) servletRegistrationManager.createFilter(e.getApplicationContext(),
                 MonitoringFilter.class.getName());
 
@@ -157,12 +112,10 @@ public class CoreModuleInitializer {
                 public String getFilterName() {
                     return filterName;
                 }
-
                 @Override
                 public ServletContext getServletContext() {
                     return servletContext;
                 }
-
                 @Override
                 public String getInitParameter(String name) {
                     if (MONITORING_PATH_PARAM.equals(name)) {
@@ -170,7 +123,6 @@ public class CoreModuleInitializer {
                     }
                     return null;
                 }
-
                 @Override
                 public Enumeration<String> getInitParameterNames() {
                     Vector<String> params = new Vector<>();
@@ -185,11 +137,10 @@ public class CoreModuleInitializer {
 
         FilterRegistration.Dynamic javamelody = servletContext.addFilter(filterName, javamelodyFilter);
 
-        javamelody.setInitParameter(MONITORING_PATH_PARAM, jmFilterUrl);
+        //javamelody.setInitParameter(MONITORING_PATH_PARAM, jmFilterUrl);
         javamelody.setAsyncSupported(true);
         javamelody.addMappingForUrlPatterns(
                 EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, "/*");
-
 
         System.out.println("\n\n\n");
         System.out.println("javamelody init parameters");
@@ -200,22 +151,16 @@ public class CoreModuleInitializer {
     }
 
     private void initializeJavamelodyListener(ServletContextInitializedEvent e) {
-
         log.info("Registering JavaMelody listener");
-
-        //Class<SessionListener> sessionListenerClass = ReflectionHelper.getClass(SessionListener.class.getName());
-
-//SessionListener listener = new SessionListener();
-
         ServletContext servletContext = e.getSource();
         try {
             servletContext.addListener(servletContext.createListener(SessionListener.class));
         } catch (ServletException ex) {
             log.info("Servlet exception occurred while registering JavaMelody Security filter: {}", e);
         }
-
         log.info("JavaMelody listener registered");
     }
+
 
     private boolean singleWarDeployment(ServletContext sc) {
         List<? extends FilterRegistration> monitoringFilters = sc.getFilterRegistrations().values()

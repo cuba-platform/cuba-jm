@@ -52,16 +52,15 @@ public class JavaMelodyInitializer {
     private ServletRegistrationManager servletRegistrationManager;
     @Inject
     private JavaMelodyConfig javaMelodyConfig;
-
-    private boolean initialized;
-    private boolean skipRegistration;
     @Inject
     private AppPropertiesLocator appPropertiesLocator;
-    private String jmFilterUrl;
-    private String filtersNameBase;
     @Inject
     private ApplicationContext applicationContext;
 
+    private boolean initialized;
+    private boolean skipRegistration;
+    private String jmFilterUrl;
+    private String filtersNameBase;
 
     private boolean getClusterStatus() {
         return BooleanUtils.toBoolean(AppContext.getProperty("cuba.cluster.enabled"));
@@ -71,26 +70,18 @@ public class JavaMelodyInitializer {
     public void initialize(ServletContextInitializedEvent e) {
 
         if (singleWarDeployment(e.getSource())) {
-            System.out.println("\n\n\n");
-            System.out.println("     singleWarDeployment    ");
-            System.out.println("\n\n\n");
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
                     "by the URL defined in application property %s for the \"core\" module", JAVAMELODY_FILTER_URL_PROP);
             log.info(msg);
-
             return;
         }
 
         if (!initialized) {
             if (!getClusterStatus()) {
             } else {
-
                 initializeSecurityFilter(e);
-
                 initializeJavaMelodyFilter(e);
-
                 initializeJavamelodyListener(e);
-
                 initialized = true;
             }
         }
@@ -100,8 +91,6 @@ public class JavaMelodyInitializer {
         log.info("Registering JavaMelody security filter");
 
         jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
-
-        jmFilterUrl = "/app-core/";
 
         if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
             skipRegistration = true;
@@ -210,7 +199,6 @@ public class JavaMelodyInitializer {
                 .stream()
                 .filter(fr -> MonitoringFilter.class.getName().equals(fr.getClassName()))
                 .collect(Collectors.toList());
-
         return monitoringFilters.size() > 1;
     }
 
