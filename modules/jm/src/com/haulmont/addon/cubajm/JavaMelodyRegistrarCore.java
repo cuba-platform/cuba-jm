@@ -19,13 +19,9 @@
 
 package com.haulmont.addon.cubajm;
 
-import com.haulmont.cuba.core.config.AppPropertiesLocator;
 import com.haulmont.cuba.core.sys.AppContext;
-import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
 import net.bull.javamelody.MonitoringFilter;
-import org.springframework.context.ApplicationContext;
 
-import javax.inject.Inject;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -19,16 +19,13 @@
 
 package com.haulmont.addon.cubajm;
 
-import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextDestroyedEvent;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextInitializedEvent;
 import net.bull.javamelody.MonitoringFilter;
 import net.bull.javamelody.SessionListener;
-import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -45,11 +42,11 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Component
-public class JMInitializer_1 {
+public class JMInitializer1 {
     private static final String JAVAMELODY_FILTER_URL_PROP = "cubajm.monitoringUrl";
     private static final String MONITORING_PATH_PARAM = "monitoring-path";
 
-    private final Logger log = LoggerFactory.getLogger(JMInitializer_1.class);
+    private final Logger log = LoggerFactory.getLogger(JMInitializer1.class);
 
     @Inject
     private ServletRegistrationManager servletRegistrationManager;
@@ -99,7 +96,7 @@ public class JMInitializer_1 {
     private void initializeJavaMelodyFilter(ServletContextInitializedEvent e) {
         jmFilterUrl = "/monitoring";
         log.info("Registering JavaMelody monitoring filter");
-        MonitoringFilter javamelodyFilter = (MonitoringFilter) servletRegistrationManager.createFilter(e.getApplicationContext(),
+        Filter javamelodyFilter = servletRegistrationManager.createFilter(e.getApplicationContext(),
                 MonitoringFilter.class.getName());
 
         String filterName = "javamelody";
