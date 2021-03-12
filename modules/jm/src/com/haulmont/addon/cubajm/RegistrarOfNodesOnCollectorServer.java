@@ -47,7 +47,8 @@ public class RegistrarOfNodesOnCollectorServer implements Callable<Boolean> {
 
         try {
 //            collectServerUrl = new URL("http://javamelody:1337/");
-            collectServerUrl = new URL("http://localhost:1337/");
+//            collectServerUrl = new URL("http://localhost:1337/");
+            collectServerUrl = new URL(AppContext.getProperty("cubajm.monitoringServerUrl"));
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

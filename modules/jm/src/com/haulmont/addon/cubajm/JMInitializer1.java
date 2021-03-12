@@ -93,14 +93,19 @@ public class JMInitializer1 {
 
         initializeJavamelodyListener(e);
 
-        ExecutorService executor;
-        try {
-            executor = Executors.newFixedThreadPool(1);
-            executor.submit(new RegistrarOfNodesOnCollectorServer()).get();
-            executor.shutdown();
-        } catch (ExecutionException | InterruptedException ex) {
-            ex.printStackTrace();
+        //If needed register node on collector server
+        if (AppContext.getProperty("cubajm.monitoringServerUrl") != null) {
+            ExecutorService executor;
+            try {
+                executor = Executors.newFixedThreadPool(1);
+                executor.submit(new RegistrarOfNodesOnCollectorServer()).get();
+                executor.shutdown();
+            } catch (ExecutionException | InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
+
+
     }
 
     @EventListener

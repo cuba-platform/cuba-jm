@@ -21,13 +21,13 @@
     <module blocks="*"
             name="global">
         <artifact appJar="true"
-                  name="cuba-jm-test-global"/>
+                  name="cuba-jm-test-new-global"/>
     </module>
     <module blocks="core"
             dependsOn="global,jm"
             name="core">
         <artifact appJar="true"
-                  name="cuba-jm-test-core"/>
+                  name="cuba-jm-test-new-core"/>
         <artifact name="javamelody-core"
                   appJar="true"
                   library="true"/>
@@ -42,11 +42,11 @@
             dependsOn="global,jm"
             name="web">
         <artifact appJar="true"
-                  name="cuba-jm-test-web"/>
+                  name="cuba-jm-test-new-web"/>
         <artifact classifier="web"
                   configuration="webcontent"
                   ext="zip"
-                  name="cuba-jm-test-web"/>
+                  name="cuba-jm-test-new-web"/>
         <artifact name="javamelody-core"
                   appJar="true"
                   library="true"/>
@@ -58,7 +58,7 @@
                   value="/web-jm/"/>
     </module>
     <module name="jm" dependsOn="global" blocks="web,desktop">
-        <artifact name="cuba-jm-test-jm"
+        <artifact name="cuba-jm-test-new-jm"
                   appJar="true"/>
         <property name="cubajm.authorizedUserLogin" value="admin"/>
         <property name="cubajm.authorizedUserPassword" value="admin"/>
