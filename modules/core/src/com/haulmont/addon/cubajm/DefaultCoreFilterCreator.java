@@ -17,28 +17,38 @@
  *
  */
 
-package com.haulmont.addon.cubajm;import net.bull.javamelody.MonitoringFilter;
+package com.haulmont.addon.cubajm;
+
+import com.haulmont.cuba.core.sys.AppComponents;
+import com.haulmont.cuba.core.sys.AppContext;
+import net.bull.javamelody.MonitoringFilter;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebListener;
 import java.util.EnumSet;
-
-@WebListener
-public class DefaultCoreFilterCreator implements ServletContextListener {
-
-
+// implements ServletContextListener
+//@Component
+public class DefaultCoreFilterCreator implements ServletContextAware {
 
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
+    public void setServletContext(ServletContext servletContext) {
 
-        ServletContext servletContext = sce.getServletContext();
-        FilterRegistration.Dynamic javamelody = servletContext.addFilter("javamelody-core", MonitoringFilter.class);
-        javamelody.setInitParameter("monitoring-path", "/monitoring");
-        javamelody.setAsyncSupported(true);
-        javamelody.addMappingForUrlPatterns(
-                EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, "/*");
     }
 
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {}
+
+
+//    @Override
+//    public void contextInitialized(ServletContextEvent sce) {
+//        ServletContext servletContext = sce.getServletContext();
+//        FilterRegistration.Dynamic javamelody = servletContext.addFilter("javamelody-core", MonitoringFilter.class);
+//        javamelody.setInitParameter("monitoring-path", "/monitoring");
+//        javamelody.setAsyncSupported(true);
+//        javamelody.addMappingForUrlPatterns(
+//                EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, "/*");
+//    }
+//
+//    @Override
+//    public void contextDestroyed(ServletContextEvent sce) {}
 }

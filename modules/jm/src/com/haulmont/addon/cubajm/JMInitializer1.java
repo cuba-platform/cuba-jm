@@ -20,7 +20,12 @@
 package com.haulmont.addon.cubajm;
 
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.ServletContextHolder;
+
+
+
 import com.haulmont.cuba.core.sys.SingleAppResourcePatternResolver;
+import com.haulmont.cuba.core.sys.events.AppContextInitializedEvent;
 import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextDestroyedEvent;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextInitializedEvent;
@@ -32,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.support.ServletContextAwareProcessor;
+import org.springframework.web.context.support.ServletContextScope;
 
 import javax.inject.Inject;
 import javax.servlet.*;
@@ -67,6 +74,30 @@ public class JMInitializer1 {
 
     @EventListener
     public void initialize(ServletContextInitializedEvent e) {
+        ClassLoader classLoader = e.getSource().getClassLoader();
+        String parent = classLoader.getName();
+//        ServletContextAwareProcessor processor = new ServletContextAwareProcessor(e.getSource());
+//        processor.
+
+        System.out.println("\n\n\n");
+        e.getSource().getFilterRegistrations().forEach((name, filter) -> {
+            System.out.println("FILTER REG CLASS NAME = " + filter.getClassName());
+            System.out.println("FILTER REG CANONICL CLASS NAME = " + filter.getClass().getCanonicalName());
+            System.out.println();
+        });
+        System.out.println("\n\n\n");
+        e.getSource().getServletRegistrations().forEach((name, servlet) -> {
+            System.out.println("Servlet CLASS NAME = " + servlet.getClassName());
+            System.out.println("Servlet NAME = " + servlet.getName());
+            System.out.println();
+        });
+
+        String name = AppContext.getApplicationContext().getClassLoader().getName();
+
+        System.out.println("\n\n\n");
+        System.out.println("NAME1 = " + parent);
+        System.out.println("NAME2 = " + name);
+        System.out.println("\n\n\n");
 
         if (singleWarDeployment(e.getSource())) {
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
