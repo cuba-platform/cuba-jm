@@ -181,6 +181,7 @@ configure(webModule) {
     dependencies {
         compile(globalModule)
         compile(jmModule)
+        compileOnly(servletApi)
     }
     
     task webArchive(type: Zip) {

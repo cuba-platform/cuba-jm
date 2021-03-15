@@ -20,6 +20,7 @@
 package com.haulmont.addon.cubajm;
 
 import com.haulmont.cuba.core.sys.AppContext;
+import com.haulmont.cuba.core.sys.SingleAppResourcePatternResolver;
 import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextDestroyedEvent;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextInitializedEvent;
@@ -60,9 +61,9 @@ public class JMInitializer1 {
     private boolean skipRegistrationCustomFilter;
     private String jmFilterUrl;
 
-    private boolean getClusterStatus() {
-        return BooleanUtils.toBoolean(AppContext.getProperty("cuba.cluster.enabled"));
-    }
+//    private boolean getClusterStatus() {
+//        return BooleanUtils.toBoolean(AppContext.getProperty("cuba.cluster.enabled"));
+//    }
 
     @EventListener
     public void initialize(ServletContextInitializedEvent e) {
@@ -73,31 +74,54 @@ public class JMInitializer1 {
             log.info(msg);
             return;
         } else {
-
         }
 
-        initializeSecurityFilter(e);
+        e.getSource().getFilterRegistrations().forEach( (s, fr) -> {
+            System.out.println("\n\n\n");
+            System.out.println("FR name");
+            System.out.println(fr.getName());
+            System.out.println("FR init params");
+            fr.getInitParameters().forEach( (s1 ,s2) -> System.out.println(s1 + ": " + s2));
+            System.out.println("FR servlet name mappings");
+            fr.getServletNameMappings().forEach(System.out::println);
+            System.out.println("FR url pattern mappings");
+            fr.getUrlPatternMappings().forEach(System.out::println);
+            System.out.println("\n\n\n");
+        });
 
-//        e.getSource().getFilterRegistrations().forEach( (s, fr) -> {
-//            System.out.println("\n\n\n");
-//            System.out.println("FR name");
-//            System.out.println(fr.getName());
-//            System.out.println("FR init params");
-//            fr.getInitParameters().forEach( (s1 ,s2) -> System.out.println(s1 + ": " + s2));
-//            System.out.println("FR servlet name mappings");
-//            fr.getServletNameMappings().forEach(System.out::println);
-//            System.out.println("FR url pattern mappings");
-//            fr.getUrlPatternMappings().forEach(System.out::println);
-//            System.out.println("\n\n\n");
-//        });
 
-        initializeJavaMelodyFilter(e);
 
-        initializeJavamelodyListener(e);
+
+
+        jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
+        if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
+            log.info("Value of application property '{}' is not defined." +
+                            "JavaMelody monitoring will be enabled for this application block by URL '{}'",
+                    JAVAMELODY_FILTER_URL_PROP, "/monitoring");
+            jmFilterUrl = "/monitoring";
+//            skipRegistrationCustomFilter = true;
+        }
+        if (jmFilterUrl.equals("/monitoring")) {
+//            skipRegistrationCustomFilter = true;
+        }
+
+
+
+
+        if (!initialized) {
+
+            if (AppContext.getProperty("cubajm.monitoringServerUrl") == null) {
+                initializeSecurityFilter(e);
+            }
+
+            initializeJavaMelodyFilter(e);
+            initializeJavamelodyListener(e);
+            initialized = true;
+        }
 
         //If needed register node on collector server
         if (AppContext.getProperty("cubajm.monitoringServerUrl") != null) {
-            if (skipRegistrationCustomFilter) {
+            if (!skipRegistrationCustomFilter) {
                 ExecutorService executor;
                 try {
                     executor = Executors.newFixedThreadPool(1);
@@ -113,9 +137,8 @@ public class JMInitializer1 {
                         "or set it to \"/monitoring\".");
             }
         }
-
-
     }
+
 
     @EventListener
     public void destroy(ServletContextDestroyedEvent event) {
@@ -126,24 +149,19 @@ public class JMInitializer1 {
         }
     }
 
-
     private void initializeSecurityFilter(ServletContextInitializedEvent e) {
         log.info("Registering JavaMelody security filter");
-
         jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
-//        jmFilterUrl = "/" + AppContext.getProperty("cuba.webContextName") + "/monitoring";
-
         String filtersNameBase;
-
         if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
             log.info("Value of application property '{}' is not defined." +
                             "JavaMelody monitoring will be enabled for this application block by URL '{}'",
                     JAVAMELODY_FILTER_URL_PROP, "/monitoring");
-            skipRegistrationCustomFilter = true;
             jmFilterUrl = "/monitoring";
+//            skipRegistrationCustomFilter = true;
         }
-        if (jmFilterUrl != null && jmFilterUrl.equals("/monitoring")) {
-            skipRegistrationCustomFilter = true;
+        if (jmFilterUrl.equals("/monitoring")) {
+//            skipRegistrationCustomFilter = true;
         }
 
         filtersNameBase = StringUtils.replaceEach(jmFilterUrl,
@@ -164,22 +182,13 @@ public class JMInitializer1 {
 
 
     private void initializeJavaMelodyFilter(ServletContextInitializedEvent e) {
-
         if (skipRegistrationCustomFilter) {
             return;
         }
-
-        //Может понадобиться при развертывании JAR файлов, т.к. я не видел в логах дефолтного фильтра!!!
-//        else {
-//            jmFilterUrl = "/monitoring";
-//        }
-
         log.info("Registering custom JavaMelody monitoring filter");
         Filter javamelodyFilter = servletRegistrationManager.createFilter(e.getApplicationContext(),
                 MonitoringFilter.class.getName());
-
         String filterName = "custom_javamelody_filter";
-
         ServletContext servletContext = e.getSource();
         try {
             // initialize custom filter manually to avoid auto registration caused by web fragment in javamelody-core
@@ -209,34 +218,11 @@ public class JMInitializer1 {
         } catch (ServletException ex) {
             throw new RuntimeException("ServletException occurred while initializing JavaMelody filter", ex);
         }
-
-//        servletContext.getFilterRegistrations().forEach( (s, fr) -> {
-//            System.out.println("\n\n\n");
-//            System.out.println(fr.getName());
-//            System.out.println("\n\n\n");
-//        });
-
         FilterRegistration.Dynamic javamelody = servletContext.addFilter(filterName, javamelodyFilter);
-
         javamelody.setInitParameter(MONITORING_PATH_PARAM, jmFilterUrl);
         javamelody.setAsyncSupported(true);
         javamelody.addMappingForUrlPatterns(
                 EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, "/*");
-
-//            e.getSource().getFilterRegistrations().forEach( (s, fr) -> {
-//            System.out.println("\n\n\n");
-//            System.out.println("FR name");
-//            System.out.println(fr.getName());
-//            System.out.println("FR init params");
-//            fr.getInitParameters().forEach( (s1 ,s2) -> System.out.println(s1 + ": " + s2));
-//            System.out.println("FR servlet name mappings");
-//            fr.getServletNameMappings().forEach(System.out::println);
-//            System.out.println("FR url pattern mappings");
-//            fr.getUrlPatternMappings().forEach(System.out::println);
-//            System.out.println("\n\n\n");
-//
-//        });
-
         log.info("Custom JavaMelody monitoring filter registered");
     }
 
@@ -257,6 +243,7 @@ public class JMInitializer1 {
                 .stream()
                 .filter(fr -> MonitoringFilter.class.getName().equals(fr.getClassName()))
                 .collect(Collectors.toList());
-        return monitoringFilters.size() > 1;
+        System.out.println("SIZE = " + monitoringFilters.size());
+        return monitoringFilters.size() == 1;
     }
 }
