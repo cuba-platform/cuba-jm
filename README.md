@@ -62,7 +62,7 @@ where `<add-on version>` is compatible with the used version of the CUBA platfor
 
 ## Configuration
 
-1. Configure monitoring URLs with the `cubajm.monitoringUrl` application property. Default values are `/core-jm/` and `/web-jm/` for middleware and web tiers respectively;
+1. Configure monitoring URLs with the `cubajm.monitoringUrl` application property. Default value is `/monitoring`;
 2. Configure monitoring dashboard authorization credentials with `cubajm.authorizedUserLogin` & `cubajm.authorizedUserPassword` application properties. The default values are `admin`, `admin`;
 
 All described here application properties can also be found in the `JavaMelodyConfig` configuration interface.
@@ -75,11 +75,20 @@ Where:
 2. `<context>` is the name of the context of the tier;
 3. `<monitoring_url>` equals to a value that is used for the
 `cubajm.monitoringUrl` application property.
+   
+##Using collector server
 
-**Pay attention**: trailing slash should be present in the URL.
+If you want use centralized monitoring, you must:
+1. Setup centralization collector-server (see https://github.com/javamelody/javamelody/wiki/UserGuideAdvanced#optional-centralization-server-setup)
+2. In the `cubajm.monitoringServerUrl` property, specify the URL your collector-server.   
+
+After it, all monitoring data will be available by specified URL.
+
+**Pay attention**: to use this option, the `cubajm.monitoringUrl` property must have a default value `/monitoring`!
+Also, I draw your attention to the fact, that after setting the collector-server - viewing the collected statistics on `cubajm.monitoringUrl` will not be available!
 
 ### Example URLs for default settings:
-1. [http://localhost:8080/app/web-jm/](http://localhost:8080/app/web-jm/) - web client monitoring
-2. [http://localhost:8080/app-core/core-jm/](http://localhost:8080/app-core/core-jm/) - middleware monitoring
+1. [http://localhost:8080/app/monitoring](http://localhost:8080/app/monitoring) - web client monitoring
+2. [http://localhost:8080/app-core/monitoring](http://localhost:8080/app-core/monitoring) - middleware monitoring
 
 **Pay attention**: in case of SingleWAR deployment the single monitoring dashboard is used for both middleware and web tiers. It's available by the monitoring URL configured for the middleware block.

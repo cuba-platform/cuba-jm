@@ -22,6 +22,7 @@ package com.haulmont.addon.cubajm;
 import com.haulmont.cuba.core.sys.AppContext;
 import net.bull.javamelody.MonitoringFilter;
 
+import javax.servlet.ServletContext;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,6 +30,16 @@ import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 
 public class RegistrarOfNodesOnCollectorServer implements Callable<Boolean> {
+
+//                ExecutorService executor;
+//                try {
+//                    executor = Executors.newFixedThreadPool(1);
+//                    executor.submit(new RegistrarOfNodesOnCollectorServer()).get();
+//                    executor.shutdown();
+//                } catch (ExecutionException | InterruptedException ex) {
+//                    log.warn(ex.getLocalizedMessage());
+//                }
+
     @Override
     public Boolean call() throws Exception {
 
@@ -38,6 +49,7 @@ public class RegistrarOfNodesOnCollectorServer implements Callable<Boolean> {
 
         String webPort = AppContext.getProperty("cuba.webPort");
         String webContextName = AppContext.getProperty("cuba.webContextName");
+
 
         try {
             address = InetAddress.getLocalHost().getHostAddress();

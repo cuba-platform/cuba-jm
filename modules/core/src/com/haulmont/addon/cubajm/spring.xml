@@ -22,4 +22,6 @@
     <!-- Annotation-based beans deploy -->
     <context:component-scan base-package="com.haulmont.addon.cubajm"/>
 
+<!--    <bean id="javamelodyFilter" class="net.bull.javamelody.MonitoringFilter" name="monitoringFilter">-->
+<!--    </bean>-->
 </beans>

@@ -45,21 +45,16 @@ public interface JavaMelodyConfig extends Config {
     String getAuthorizedUserPassword();
 
     /**
-     * @return the URL postfix to access to the monitoring dashboard. For example, for the middleware block it equals
-     * to "/core-jm/
+     * @return the URL postfix to access to the monitoring dashboard. By default, it equals "/monitoring"
      */
     @Property("cubajm.monitoringUrl")
+    @DefaultString("/monitoring")
     String getMonitoringUrl();
 
-    @Property("cubajm.nodeNames")
-    String getNodeNames();
-
-
+    /**
+     * @return the URL centralized monitoring server.
+     */
     @Property("cubajm.monitoringServerUrl")
     String getJavaMelodyServerAddress();
-
-    @Property("javamelody.centralized.monitoring")
-    @DefaultBoolean(false)
-    boolean isJavaMelodyCentralizedMonitoring();
 
 }

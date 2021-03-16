@@ -23,6 +23,9 @@
     <!-- Annotation-based beans -->
     <context:component-scan base-package="com.haulmont.addon.cubajm"/>
 
+<!--    <bean id="javamelodyFilter" class="net.bull.javamelody.MonitoringFilter" name="monitoringFilter">-->
+<!--    </bean>-->
+
     <gui:screens base-packages="com.haulmont.addon.cubajm.web"/>
 
     <bean id="cubajm_proxyCreator" class="com.haulmont.cuba.web.sys.remoting.WebRemoteProxyBeanCreator">

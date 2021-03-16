@@ -33,10 +33,6 @@
                   library="true"/>
         <property name="cuba.springContextConfig"
                   value="+com/haulmont/addon/cubajm/spring.xml"/>
-<!--        <property name="cubajm.monitoringUrl"-->
-<!--                  value="/core-jm/"/>-->
-<!--        <property name="cubajm.nodeNames"-->
-<!--                  value="web, core"/>-->
     </module>
     <module blocks="web"
             dependsOn="global,jm"
@@ -54,8 +50,6 @@
                   value="+com/haulmont/addon/cubajm/web-spring.xml"/>
         <property name="cuba.dispatcherSpringContextConfig"
                   value="+com/haulmont/addon/cubajm/web-dispatcher-spring.xml"/>
-<!--        <property name="cubajm.monitoringUrl"-->
-<!--                  value="/web-jm/"/>-->
     </module>
     <module name="jm" dependsOn="global" blocks="web,desktop">
         <artifact name="cuba-jm-test-new-jm"
