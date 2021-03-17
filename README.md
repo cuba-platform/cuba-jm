@@ -76,7 +76,7 @@ Where:
 3. `<monitoring_url>` equals to a value that is used for the
 `cubajm.monitoringUrl` application property.
    
-##Using collector server
+## Using collector server
 
 If you want use centralized monitoring, you must:
 1. Setup centralization collector-server (see https://github.com/javamelody/javamelody/wiki/UserGuideAdvanced#optional-centralization-server-setup)
