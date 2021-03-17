@@ -85,9 +85,7 @@ public class JavaMelodyInitializer {
 
 
     private void initJavaMelody(ServletContextInitializedEvent e) {
-        if (AppContext.getProperty("cubajm.monitoringServerUrl") == null) {
-            initializeSecurityFilter(e);
-        }
+        initializeSecurityFilter(e);
         initializeJavaMelodyFilter(e);
         initializeJavamelodyListener(e);
         registrOnCollectorServer(e.getSource());
@@ -200,6 +198,8 @@ public class JavaMelodyInitializer {
         URL applicationNodeUrl = null;
         String webPort = AppContext.getProperty("cuba.webPort");
         String webContextName = context.getContextPath();
+        String authorizedUserLogin = javaMelodyConfig.getAuthorizedUserLogin();
+        String authorizedUserPassword = javaMelodyConfig.getAuthorizedUserPassword();
         try {
             address = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
@@ -211,7 +211,8 @@ public class JavaMelodyInitializer {
             log.error("Collector-server URL specified incorrectly!", e);
         }
         try {
-            applicationNodeUrl = new URL("http://" + address + ":" + webPort + webContextName);
+            applicationNodeUrl = new URL("http://" + authorizedUserLogin + ":" + authorizedUserPassword + "@"
+                    + address + ":" + webPort + webContextName);
         } catch (MalformedURLException e) {
             log.error("Error creating application node URL!", e);
         }
