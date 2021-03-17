@@ -203,17 +203,17 @@ public class JavaMelodyInitializer {
         try {
             address = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.error("IP address of a host could not be determined!", e);
         }
         try {
             collectServerUrl = new URL(javaMelodyConfig.getJavaMelodyServerAddress());
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            log.error("Collector-server URL specified incorrectly!", e);
         }
         try {
             applicationNodeUrl = new URL("http://" + address + ":" + webPort + webContextName);
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            log.error("Error creating application node URL!", e);
         }
         MonitoringFilter.registerApplicationNodeInCollectServer(AppContext.getProperty("cuba.webHostName") + webContextName,
                 collectServerUrl, applicationNodeUrl);
