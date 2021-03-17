@@ -16,7 +16,7 @@
  */
 
 rootProject.name = 'cubajm'
-def modulePrefix = 'cuba-jm-test-new'
+def modulePrefix = 'cuba-jm'
 
 include(":${modulePrefix}-global", ":${modulePrefix}-core", ":${modulePrefix}-web", ":${modulePrefix}-jm")
 project(":${modulePrefix}-global").projectDir = new File(settingsDir, 'modules/global')

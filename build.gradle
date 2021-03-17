@@ -44,7 +44,7 @@ buildscript {
     }
 }
 
-def modulePrefix = 'cuba-jm-test-new'
+def modulePrefix = 'cuba-jm'
 
 def globalModule = project(":${modulePrefix}-global")
 def coreModule = project(":${modulePrefix}-core")
