@@ -86,7 +86,7 @@ public class JavaMelodyInitializer {
         initializeSecurityFilter(e);
         initializeJavaMelodyFilter(e);
         initializeJavamelodyListener(e);
-        registrOnCollectorServer(e.getSource());
+        registerOnCollectorServer(e.getSource());
     }
 
 
@@ -177,7 +177,7 @@ public class JavaMelodyInitializer {
         return monitoringFilters.size() == 0;
     }
 
-    private void registrOnCollectorServer(ServletContext context) {
+    private void registerOnCollectorServer(ServletContext context) {
         if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
             if (skipRegistrationCustomFilter) {
                 try {
