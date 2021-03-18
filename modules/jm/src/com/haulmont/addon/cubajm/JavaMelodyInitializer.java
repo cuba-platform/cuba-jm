@@ -177,7 +177,7 @@ public class JavaMelodyInitializer {
     private void registrOnCollectorServer(ServletContext context) {
         if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
             if (skipRegistrationCustomFilter) {
-                URL url = registrNodeOnCollectorServer(context);
+                URL url = registerNodeOnCollectorServer(context);
                 if (url != null) {
                     log.info("Monitoring your application available by next URL: {}", url);
                 } else {
@@ -192,7 +192,7 @@ public class JavaMelodyInitializer {
         }
     }
 
-    private URL registrNodeOnCollectorServer(ServletContext context) {
+    private URL registerNodeOnCollectorServer(ServletContext context) {
         String address;
         URL collectServerUrl;
         URL applicationNodeUrl;
