@@ -17,8 +17,9 @@
 
 package com.haulmont.addon.cubajm;
 
-import com.haulmont.bali.util.ReflectionHelper;
+import com.haulmont.cuba.core.sys.AppContext;
 import com.haulmont.cuba.core.sys.servlet.ServletRegistrationManager;
+import com.haulmont.cuba.core.sys.servlet.events.ServletContextDestroyedEvent;
 import com.haulmont.cuba.core.sys.servlet.events.ServletContextInitializedEvent;
 import net.bull.javamelody.MonitoringFilter;
 import net.bull.javamelody.SessionListener;
@@ -30,96 +31,97 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.servlet.*;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Vector;
-import java.util.stream.Collectors;
 
 @Component("cubajm_JavaMelodyInitializer")
 public class JavaMelodyInitializer {
-
     private static final String JAVAMELODY_FILTER_URL_PROP = "cubajm.monitoringUrl";
+    private static final String JAVAMELODY_COLLECTOR_SERVER_URL_PROP = "cubajm.monitoringServerUrl";
     private static final String MONITORING_PATH_PARAM = "monitoring-path";
-
+    private static final String DEFAULT_MONITORING_URL = "/monitoring";
     private final Logger log = LoggerFactory.getLogger(JavaMelodyInitializer.class);
-
     @Inject
     private ServletRegistrationManager servletRegistrationManager;
-
     @Inject
     private JavaMelodyConfig javaMelodyConfig;
-
-    private boolean initialized;
-    private boolean skipRegistration;
-
+    private boolean skipRegistrationCustomFilter;
     private String jmFilterUrl;
-    private String filtersNameBase;
 
     @EventListener
     public void initialize(ServletContextInitializedEvent e) {
-        if (singleWarDeployment(e.getSource())) {
-            String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
-                    "by the URL defined in application property %s for the \"core\" module", JAVAMELODY_FILTER_URL_PROP);
-            log.info(msg);
-
-            return;
-        }
-
-        if (!initialized) {
-            initializeSecurityFilter(e);
-
-            initializeJavaMelodyFilter(e);
-
-            initializeJavamelodyListener(e);
-
-            initialized = true;
-        }
-    }
-
-    private void initializeSecurityFilter(ServletContextInitializedEvent e) {
-        log.info("Registering JavaMelody security filter");
 
         jmFilterUrl = javaMelodyConfig.getMonitoringUrl();
         if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
-            skipRegistration = true;
-
             log.info("Value of application property '{}' is not defined." +
-                    "JavaMelody monitoring will not be enabled for this application block",
-                    JAVAMELODY_FILTER_URL_PROP);
-
-            return;
+                            "JavaMelody monitoring will be enabled for this application block by URL '{}'",
+                    JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL);
+            jmFilterUrl = DEFAULT_MONITORING_URL;
+            skipRegistrationCustomFilter = true;
+        } else if (jmFilterUrl.equals(DEFAULT_MONITORING_URL)) {
+            skipRegistrationCustomFilter = true;
         }
 
+        //It will be false, if used single war deployment.
+        if (e.getSource().getFilterRegistration("custom_javamelody_filter") == null) {
+            initJavaMelody(e);
+        } else {
+            String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
+                    "by the URL defined in application property %s for the \"core\" module (default \"%s\") " +
+                    "or on collector-server, if property \"%s\" is specified.", JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL, JAVAMELODY_COLLECTOR_SERVER_URL_PROP);
+            log.info(msg);
+        }
+    }
+
+
+    private void initJavaMelody(ServletContextInitializedEvent e) {
+        initializeSecurityFilter(e);
+        initializeJavaMelodyFilter(e);
+        initializeJavamelodyListener(e);
+        if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
+            if (skipRegistrationCustomFilter) {
+                registerOnCollectorServer(e.getSource());
+            } else {
+                log.warn("You have installed a unique URL monitoring. " +
+                        "Now, you will not be able to register your application with the collector server. " +
+                        "If you want to change this, please remove the \"{}}\" property " +
+                        "or set it to \"{}\".",JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL);
+            }
+        }
+    }
+
+
+    private void initializeSecurityFilter(ServletContextInitializedEvent e) {
+        log.info("Registering JavaMelody security filter");
+        String filtersNameBase;
         filtersNameBase = StringUtils.replaceEach(jmFilterUrl,
                 new String[]{"/", "*"},
                 new String[]{"_", ""})
                 .substring(1);
         String secFilterName = filtersNameBase + "javamelody_security_filter";
-
         Filter securityFilter = servletRegistrationManager.createFilter(e.getApplicationContext(),
                 JavaMelodySecurityFilter.class.getName());
-
         e.getSource().addFilter(secFilterName, securityFilter)
                 .addMappingForUrlPatterns(
                         EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, jmFilterUrl);
-
         log.info("JavaMelody security filter registered");
     }
 
+
     private void initializeJavaMelodyFilter(ServletContextInitializedEvent e) {
-        if (skipRegistration) {
+        if (skipRegistrationCustomFilter && !isSingleWarDeployment(e.getSource())) {
             return;
         }
-
-        log.info("Registering JavaMelody monitoring filter");
-
-        Filter javamelodyFilter = servletRegistrationManager.createFilter(e.getApplicationContext(),
-                MonitoringFilter.class.getName());
-
-        String filterName = filtersNameBase + "javamelody_filter";
-
-        final ServletContext servletContext = e.getSource();
+        log.info("Registering custom JavaMelody monitoring filter");
+        MonitoringFilter javamelodyFilter = new MonitoringFilter();
+        String filterName = "custom_javamelody_filter";
+        ServletContext servletContext = e.getSource();
         try {
             // initialize custom filter manually to avoid auto registration caused by web fragment in javamelody-core
             javamelodyFilter.init(new FilterConfig() {
@@ -127,68 +129,127 @@ public class JavaMelodyInitializer {
                 public String getFilterName() {
                     return filterName;
                 }
-
                 @Override
                 public ServletContext getServletContext() {
                     return servletContext;
                 }
-
                 @Override
                 public String getInitParameter(String name) {
                     if (MONITORING_PATH_PARAM.equals(name)) {
                         return jmFilterUrl;
                     }
-
                     return null;
                 }
-
                 @Override
                 public Enumeration<String> getInitParameterNames() {
                     Vector<String> params = new Vector<>();
                     params.add(MONITORING_PATH_PARAM);
-
                     return params.elements();
                 }
             });
         } catch (ServletException ex) {
             throw new RuntimeException("ServletException occurred while initializing JavaMelody filter", ex);
         }
-
-        FilterRegistration.Dynamic javamelody = servletContext
-                .addFilter(filterName, javamelodyFilter);
-
+        FilterRegistration.Dynamic javamelody = servletContext.addFilter(filterName, javamelodyFilter);
         javamelody.setInitParameter(MONITORING_PATH_PARAM, jmFilterUrl);
+        javamelody.setAsyncSupported(true);
         javamelody.addMappingForUrlPatterns(
                 EnumSet.of(DispatcherType.REQUEST, DispatcherType.ASYNC), true, "/*");
-
-        log.info("JavaMelody monitoring filter registered");
+        log.info("Custom JavaMelody monitoring filter registered");
     }
 
     private void initializeJavamelodyListener(ServletContextInitializedEvent e) {
-        if (skipRegistration) {
-            return;
-        }
-
         log.info("Registering JavaMelody listener");
-
-        Class<SessionListener> sessionListenerClass = ReflectionHelper.getClass(SessionListener.class.getName());
-
         ServletContext servletContext = e.getSource();
         try {
-            servletContext.addListener(servletContext.createListener(sessionListenerClass));
+            servletContext.addListener(servletContext.createListener(SessionListener.class));
         } catch (ServletException ex) {
-            log.info("Servlet exception occurred while registering JavaMelody Security filter: {}", e);
+            log.info("Servlet exception occurred while registering JavaMelody listener: {}", e);
         }
-
         log.info("JavaMelody listener registered");
     }
 
-    private boolean singleWarDeployment(ServletContext sc) {
-        List<? extends FilterRegistration> monitoringFilters = sc.getFilterRegistrations().values()
-                .stream()
-                .filter(fr -> MonitoringFilter.class.getName().equals(fr.getClassName()))
-                .collect(Collectors.toList());
 
-        return monitoringFilters.size() > 1;
+    /**
+     *
+     * @param context - current servlet context
+     * @return true, if servletContext not contains MonitoringFilter
+     * (it possible, when the file web-fragment.xml defined in javamelody-core is NOT taken into account)
+     */
+    private boolean isSingleWarDeployment(ServletContext context) {
+        boolean notSingleWar = context.getFilterRegistrations().values()
+                .stream()
+                .anyMatch(fr -> MonitoringFilter.class.getName().equals(fr.getClassName()));
+        return !notSingleWar;
     }
+
+    private void registerOnCollectorServer(ServletContext context) {
+        try {
+            URL url = registerNodeOnCollectorServer(context);
+            log.info("Application performance monitoring URL: {}", url);
+        } catch (MalformedURLException | UnknownHostException e) {
+            log.warn("Error registering application on the monitoring server: {}", javaMelodyConfig.getJavaMelodyServerAddress(), e);
+        }
+
+    }
+
+    private URL registerNodeOnCollectorServer(ServletContext context) throws MalformedURLException, UnknownHostException{
+        String address;
+        URL collectServerUrl;
+        URL applicationNodeUrl;
+        URL defaultApplicationMonitoringUrl;
+        String webPort = AppContext.getProperty("cuba.webPort");
+        String webContextName = context.getContextPath();
+        String authorizedUserLogin = javaMelodyConfig.getAuthorizedUserLogin();
+        String authorizedUserPassword = javaMelodyConfig.getAuthorizedUserPassword();
+
+        try {
+            address = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            log.error("IP address of a host could not be determined!", e);
+            throw e;
+        }
+
+        try {
+            if (!StringUtils.isEmpty(authorizedUserLogin) && !StringUtils.isEmpty(authorizedUserPassword)) {
+                applicationNodeUrl = new URL("http://" + authorizedUserLogin + ":" + authorizedUserPassword + "@"
+                        + address + ":" + webPort + webContextName);
+            } else {
+                applicationNodeUrl = new URL("http://" + address + ":" + webPort + webContextName);
+            }
+        } catch (MalformedURLException e) {
+            log.error("Error creating application node URL!", e);
+            throw e;
+        }
+
+        try {
+            defaultApplicationMonitoringUrl = new URL(applicationNodeUrl.toString() + jmFilterUrl);
+        } catch (MalformedURLException e) {
+            log.error("Default application monitoring URL cannot be created. Check property {}", JAVAMELODY_FILTER_URL_PROP, e);
+            throw e;
+        }
+
+        try {
+            collectServerUrl = new URL(javaMelodyConfig.getJavaMelodyServerAddress());
+        } catch (MalformedURLException e) {
+            log.warn("Collector-server URL ({}) specified incorrectly.", javaMelodyConfig.getJavaMelodyServerAddress(), e);
+            return defaultApplicationMonitoringUrl;
+        }
+
+        MonitoringFilter.registerApplicationNodeInCollectServer(AppContext.getProperty("cuba.webHostName") + webContextName,
+                collectServerUrl, applicationNodeUrl);
+
+        return collectServerUrl;
+    }
+
+
+    @EventListener
+    public void destroy(ServletContextDestroyedEvent event) {
+        try {
+            MonitoringFilter.unregisterApplicationNodeInCollectServer();
+        } catch (IOException e) {
+            log.error("Error unregistering application node from collector-server", e);
+        }
+    }
+
 }

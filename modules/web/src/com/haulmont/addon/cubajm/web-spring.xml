@@ -24,4 +24,6 @@
     <context:component-scan base-package="com.haulmont.addon.cubajm"/>
 
     <gui:screens base-packages="com.haulmont.addon.cubajm.web"/>
+
+    <import resource="classpath:net/bull/javamelody/monitoring-spring-aspectj.xml" />
 </beans>
