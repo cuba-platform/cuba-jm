@@ -38,9 +38,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Vector;
-import java.util.stream.Collectors;
 
 @Component("cubajm_JavaMelodyInitializer")
 public class JavaMelodyInitializer {
@@ -86,7 +84,16 @@ public class JavaMelodyInitializer {
         initializeSecurityFilter(e);
         initializeJavaMelodyFilter(e);
         initializeJavamelodyListener(e);
-        registerOnCollectorServer(e.getSource());
+        if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
+            if (skipRegistrationCustomFilter) {
+                registerOnCollectorServer(e.getSource());
+            } else {
+                log.warn("You have installed a unique URL monitoring. " +
+                        "Now, you will not be able to register your application with the collector server. " +
+                        "If you want to change this, please remove the \"{}}\" property " +
+                        "or set it to \"{}\".",JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL);
+            }
+        }
     }
 
 
@@ -108,7 +115,7 @@ public class JavaMelodyInitializer {
 
 
     private void initializeJavaMelodyFilter(ServletContextInitializedEvent e) {
-        if (skipRegistrationCustomFilter && !singleWarDeployment(e.getSource())) {
+        if (skipRegistrationCustomFilter && !isSingleWarDeployment(e.getSource())) {
             return;
         }
         log.info("Registering custom JavaMelody monitoring filter");
@@ -169,33 +176,24 @@ public class JavaMelodyInitializer {
      * @return true, if servletContext not contains MonitoringFilter
      * (it possible, when the file web-fragment.xml defined in javamelody-core is NOT taken into account)
      */
-    private boolean singleWarDeployment(ServletContext context) {
-        List<? extends FilterRegistration> monitoringFilters = context.getFilterRegistrations().values()
+    private boolean isSingleWarDeployment(ServletContext context) {
+        boolean notSingleWar = context.getFilterRegistrations().values()
                 .stream()
-                .filter(fr -> MonitoringFilter.class.getName().equals(fr.getClassName()))
-                .collect(Collectors.toList());
-        return monitoringFilters.size() == 0;
+                .anyMatch(fr -> MonitoringFilter.class.getName().equals(fr.getClassName()));
+        return !notSingleWar;
     }
 
     private void registerOnCollectorServer(ServletContext context) {
-        if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
-            if (skipRegistrationCustomFilter) {
-                try {
-                    URL url = registerNodeOnCollectorServer(context);
-                    log.info("Monitoring your application available by next URL: {}", url);
-                } catch (Exception e) {
-                    log.warn("Error about registration application for monitoring.", e);
-                }
-            } else {
-                log.warn("You have installed a unique URL monitoring. " +
-                        "Now, you will not be able to register your application with the collector server. " +
-                        "If you want to change this, please remove the \"{}}\" property " +
-                        "or set it to \"{}\".",JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL);
-            }
+        try {
+            URL url = registerNodeOnCollectorServer(context);
+            log.info("Monitoring your application available by next URL: {}", url);
+        } catch (MalformedURLException | UnknownHostException e) {
+            log.warn("Error about registration application for monitoring.", e);
         }
+
     }
 
-    private URL registerNodeOnCollectorServer(ServletContext context) throws Exception{
+    private URL registerNodeOnCollectorServer(ServletContext context) throws MalformedURLException, UnknownHostException{
         String address;
         URL collectServerUrl;
         URL applicationNodeUrl;
@@ -234,7 +232,7 @@ public class JavaMelodyInitializer {
         try {
             collectServerUrl = new URL(javaMelodyConfig.getJavaMelodyServerAddress());
         } catch (MalformedURLException e) {
-            log.error("Collector-server URL specified incorrectly!", e);
+            log.warn("Collector-server URL specified incorrectly!", e);
             return defaultApplicationMonitoringUrl;
         }
 
