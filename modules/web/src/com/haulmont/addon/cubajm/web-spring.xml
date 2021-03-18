@@ -25,13 +25,5 @@
 
     <gui:screens base-packages="com.haulmont.addon.cubajm.web"/>
 
-    <bean id="cubajm_proxyCreator" class="com.haulmont.cuba.web.sys.remoting.WebRemoteProxyBeanCreator">
-        <property name="serverSelector" ref="cuba_ServerSelector"/>
-        <property name="remoteServices">
-            <map>
-            </map>
-        </property>
-    </bean>
-
     <import resource="classpath:net/bull/javamelody/monitoring-spring-aspectj.xml" />
 </beans>

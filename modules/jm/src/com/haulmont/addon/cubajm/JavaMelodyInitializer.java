@@ -32,10 +32,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.servlet.*;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
@@ -70,18 +67,14 @@ public class JavaMelodyInitializer {
             skipRegistrationCustomFilter = true;
         }
 
-        if (singleWarDeployment(e.getSource())) {
+        //It will be false, if used single war deployment.
+        if (e.getSource().getFilterRegistration("custom_javamelody_filter") == null) {
+            initJavaMelody(e);
+        } else {
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
                     "by the URL defined in application property %s for the \"core\" module (default \"%s\") " +
                     "or on collector-server, if property \"%s\" is specified.", JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL, JAVAMELODY_COLLECTOR_SERVER_URL_PROP);
             log.info(msg);
-            initJavaMelody(e);
-            return;
-        }
-
-        //It will be false, if used single war deployment.
-        if (e.getSource().getFilterRegistration("custom_javamelody_filter") == null) {
-            initJavaMelody(e);
         }
     }
 
@@ -184,7 +177,12 @@ public class JavaMelodyInitializer {
     private void registrOnCollectorServer(ServletContext context) {
         if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
             if (skipRegistrationCustomFilter) {
-                registrNodeOnCollectorServer(context);
+                URL url = registrNodeOnCollectorServer(context);
+                if (url != null) {
+                    log.info("Monitoring your application available by next URL: {}", url);
+                } else {
+                    log.error("Error about registration application for monitoring.");
+                }
             } else {
                 log.warn("You have installed a unique URL monitoring. " +
                         "Now, you will not be able to register your application with the collector server. " +
@@ -194,35 +192,53 @@ public class JavaMelodyInitializer {
         }
     }
 
-    private void registrNodeOnCollectorServer(ServletContext context) {
-        String address = null;
-        URL collectServerUrl = null;
-        URL applicationNodeUrl = null;
+    private URL registrNodeOnCollectorServer(ServletContext context) {
+        String address;
+        URL collectServerUrl;
+        URL applicationNodeUrl;
+        URL defaultApplicationMonitoringUrl;
         String webPort = AppContext.getProperty("cuba.webPort");
         String webContextName = context.getContextPath();
         String authorizedUserLogin = javaMelodyConfig.getAuthorizedUserLogin();
         String authorizedUserPassword = javaMelodyConfig.getAuthorizedUserPassword();
+
         try {
             address = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             log.error("IP address of a host could not be determined!", e);
-            return;
+            return null;
         }
+
+        try {
+            if (!StringUtils.isEmpty(authorizedUserLogin) && !StringUtils.isEmpty(authorizedUserPassword)) {
+                applicationNodeUrl = new URL("http://" + authorizedUserLogin + ":" + authorizedUserPassword + "@"
+                        + address + ":" + webPort + webContextName);
+            } else {
+                applicationNodeUrl = new URL("http://" + address + ":" + webPort + webContextName);
+            }
+        } catch (MalformedURLException e) {
+            log.error("Error creating application node URL!", e);
+            return null;
+        }
+
+        try {
+            defaultApplicationMonitoringUrl = new URL(applicationNodeUrl.toString() + jmFilterUrl);
+        } catch (MalformedURLException e) {
+            log.error("Default application monitoring URL cannot be created. Check property {}", JAVAMELODY_FILTER_URL_PROP, e);
+            return null;
+        }
+
         try {
             collectServerUrl = new URL(javaMelodyConfig.getJavaMelodyServerAddress());
         } catch (MalformedURLException e) {
             log.error("Collector-server URL specified incorrectly!", e);
-            return;
+            return defaultApplicationMonitoringUrl;
         }
-        try {
-            applicationNodeUrl = new URL("http://" + authorizedUserLogin + ":" + authorizedUserPassword + "@"
-                    + address + ":" + webPort + webContextName);
-        } catch (MalformedURLException e) {
-            log.error("Error creating application node URL!", e);
-            return;
-        }
+
         MonitoringFilter.registerApplicationNodeInCollectServer(AppContext.getProperty("cuba.webHostName") + webContextName,
                 collectServerUrl, applicationNodeUrl);
+
+        return collectServerUrl;
     }
 
 
