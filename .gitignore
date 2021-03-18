@@ -2,9 +2,9 @@ deploy/*
 modules/*/build/
 build/*
 .gradle/*
-config/*
-
 .idea/*
+config/*
+etc/*
 
 *.iws
 *.ipr
