@@ -45,7 +45,9 @@ import java.util.stream.Collectors;
 @Component("cubajm_JavaMelodyInitializer")
 public class JavaMelodyInitializer {
     private static final String JAVAMELODY_FILTER_URL_PROP = "cubajm.monitoringUrl";
+    private static final String JAVAMELODY_COLLECTOR_SERVER_URL_PROP = "cubajm.monitoringServerUrl";
     private static final String MONITORING_PATH_PARAM = "monitoring-path";
+    private static final String DEFAULT_MONITORING_URL = "/monitoring";
     private final Logger log = LoggerFactory.getLogger(JavaMelodyInitializer.class);
     @Inject
     private ServletRegistrationManager servletRegistrationManager;
@@ -61,17 +63,17 @@ public class JavaMelodyInitializer {
         if (jmFilterUrl == null || jmFilterUrl.isEmpty()) {
             log.info("Value of application property '{}' is not defined." +
                             "JavaMelody monitoring will be enabled for this application block by URL '{}'",
-                    JAVAMELODY_FILTER_URL_PROP, "/monitoring");
-            jmFilterUrl = "/monitoring";
+                    JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL);
+            jmFilterUrl = DEFAULT_MONITORING_URL;
             skipRegistrationCustomFilter = true;
-        } else if (jmFilterUrl.equals("/monitoring")) {
+        } else if (jmFilterUrl.equals(DEFAULT_MONITORING_URL)) {
             skipRegistrationCustomFilter = true;
         }
 
         if (singleWarDeployment(e.getSource())) {
             String msg = String.format("SingleWAR deployment detected. JavaMelody monitoring will be available " +
-                    "by the URL defined in application property %s for the \"core\" module (default \"/monitoring\") " +
-                    "or on collector-server, if property \"cubajm.monitoringServerUrl\" is specified.", JAVAMELODY_FILTER_URL_PROP);
+                    "by the URL defined in application property %s for the \"core\" module (default \"%s\") " +
+                    "or on collector-server, if property \"%s\" is specified.", JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL, JAVAMELODY_COLLECTOR_SERVER_URL_PROP);
             log.info(msg);
             initJavaMelody(e);
             return;
@@ -180,14 +182,14 @@ public class JavaMelodyInitializer {
     }
 
     private void registrOnCollectorServer(ServletContext context) {
-        if (AppContext.getProperty("cubajm.monitoringServerUrl") != null) {
+        if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
             if (skipRegistrationCustomFilter) {
                 registrNodeOnCollectorServer(context);
             } else {
                 log.warn("You have installed a unique URL monitoring. " +
                         "Now, you will not be able to register your application with the collector server. " +
-                        "If you want to change this, please remove the \"cubajm.monitoringUrl\" property " +
-                        "or set it to \"/monitoring\".");
+                        "If you want to change this, please remove the \"{}}\" property " +
+                        "or set it to \"{}\".",JAVAMELODY_FILTER_URL_PROP, DEFAULT_MONITORING_URL);
             }
         }
     }
@@ -204,17 +206,20 @@ public class JavaMelodyInitializer {
             address = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             log.error("IP address of a host could not be determined!", e);
+            return;
         }
         try {
             collectServerUrl = new URL(javaMelodyConfig.getJavaMelodyServerAddress());
         } catch (MalformedURLException e) {
             log.error("Collector-server URL specified incorrectly!", e);
+            return;
         }
         try {
             applicationNodeUrl = new URL("http://" + authorizedUserLogin + ":" + authorizedUserPassword + "@"
                     + address + ":" + webPort + webContextName);
         } catch (MalformedURLException e) {
             log.error("Error creating application node URL!", e);
+            return;
         }
         MonitoringFilter.registerApplicationNodeInCollectServer(AppContext.getProperty("cuba.webHostName") + webContextName,
                 collectServerUrl, applicationNodeUrl);
@@ -226,7 +231,7 @@ public class JavaMelodyInitializer {
         try {
             MonitoringFilter.unregisterApplicationNodeInCollectServer();
         } catch (IOException e) {
-            log.error("Error", e);
+            log.error("Error unregistering application node from collector-server", e);
         }
     }
 

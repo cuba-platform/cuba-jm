@@ -144,7 +144,6 @@ configure(coreModule) {
         compile(jmModule)
         jdbc(hsql)
         testRuntime(hsql)
-        compileOnly(servletApi)
     }
 
     task cleanConf(description: 'Cleans up conf directory', type: Delete) {
@@ -181,7 +180,6 @@ configure(webModule) {
     dependencies {
         compile(globalModule)
         compile(jmModule)
-        compileOnly(servletApi)
     }
     
     task webArchive(type: Zip) {
@@ -239,7 +237,3 @@ task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefi
     }
 }
 restart.finalizedBy start
-
-task buildUberJar(type: CubaUberJarBuilding) {
-    appProperties = ['cuba.automaticDatabaseUpdate': true]
-}
