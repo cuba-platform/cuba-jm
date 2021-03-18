@@ -2,6 +2,7 @@ deploy/*
 modules/*/build/
 build/*
 .gradle/*
+
 .idea/*
 
 *.iws

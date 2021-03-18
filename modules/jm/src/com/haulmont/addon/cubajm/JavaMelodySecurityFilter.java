@@ -38,6 +38,7 @@ public class JavaMelodySecurityFilter implements Filter {
     public void init(FilterConfig filterConfig) {
         JavaMelodyConfig javaMelodyConfig = AppBeans.get(Configuration.class)
                 .getConfig(JavaMelodyConfig.class);
+
         this.login = javaMelodyConfig.getAuthorizedUserLogin();
         this.password = javaMelodyConfig.getAuthorizedUserPassword();
     }

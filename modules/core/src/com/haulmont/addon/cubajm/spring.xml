@@ -21,5 +21,4 @@
 
     <!-- Annotation-based beans deploy -->
     <context:component-scan base-package="com.haulmont.addon.cubajm"/>
-
 </beans>
