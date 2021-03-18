@@ -32,7 +32,10 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.servlet.*;
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
@@ -177,11 +180,11 @@ public class JavaMelodyInitializer {
     private void registrOnCollectorServer(ServletContext context) {
         if (AppContext.getProperty(JAVAMELODY_COLLECTOR_SERVER_URL_PROP) != null) {
             if (skipRegistrationCustomFilter) {
-                URL url = registerNodeOnCollectorServer(context);
-                if (url != null) {
+                try {
+                    URL url = registerNodeOnCollectorServer(context);
                     log.info("Monitoring your application available by next URL: {}", url);
-                } else {
-                    log.error("Error about registration application for monitoring.");
+                } catch (Exception e) {
+                    log.warn("Error about registration application for monitoring.", e);
                 }
             } else {
                 log.warn("You have installed a unique URL monitoring. " +
@@ -192,7 +195,7 @@ public class JavaMelodyInitializer {
         }
     }
 
-    private URL registerNodeOnCollectorServer(ServletContext context) {
+    private URL registerNodeOnCollectorServer(ServletContext context) throws Exception{
         String address;
         URL collectServerUrl;
         URL applicationNodeUrl;
@@ -206,7 +209,7 @@ public class JavaMelodyInitializer {
             address = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             log.error("IP address of a host could not be determined!", e);
-            return null;
+            throw e;
         }
 
         try {
@@ -218,14 +221,14 @@ public class JavaMelodyInitializer {
             }
         } catch (MalformedURLException e) {
             log.error("Error creating application node URL!", e);
-            return null;
+            throw e;
         }
 
         try {
             defaultApplicationMonitoringUrl = new URL(applicationNodeUrl.toString() + jmFilterUrl);
         } catch (MalformedURLException e) {
             log.error("Default application monitoring URL cannot be created. Check property {}", JAVAMELODY_FILTER_URL_PROP, e);
-            return null;
+            throw e;
         }
 
         try {
