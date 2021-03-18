@@ -186,9 +186,9 @@ public class JavaMelodyInitializer {
     private void registerOnCollectorServer(ServletContext context) {
         try {
             URL url = registerNodeOnCollectorServer(context);
-            log.info("Monitoring your application available by next URL: {}", url);
+            log.info("Application performance monitoring URL: {}", url);
         } catch (MalformedURLException | UnknownHostException e) {
-            log.warn("Error about registration application for monitoring.", e);
+            log.warn("Error registering application on the monitoring server: {}", javaMelodyConfig.getJavaMelodyServerAddress(), e);
         }
 
     }
@@ -232,7 +232,7 @@ public class JavaMelodyInitializer {
         try {
             collectServerUrl = new URL(javaMelodyConfig.getJavaMelodyServerAddress());
         } catch (MalformedURLException e) {
-            log.warn("Collector-server URL specified incorrectly!", e);
+            log.warn("Collector-server URL ({}) specified incorrectly.", javaMelodyConfig.getJavaMelodyServerAddress(), e);
             return defaultApplicationMonitoringUrl;
         }
 
