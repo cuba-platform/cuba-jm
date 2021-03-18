@@ -5,6 +5,7 @@ build/*
 .idea/*
 config/*
 etc/*
+lib/*
 
 *.iws
 *.ipr
